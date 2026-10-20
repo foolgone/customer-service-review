@@ -11,9 +11,18 @@
     color-scheme: dark;
   }
 
+  /* 性能优化：启用硬件加速 */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply min-h-screen bg-slate-50 text-slate-900 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
     background-image: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.92));
+    /* 性能优化：使用 GPU 加速滚动 */
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
   }
 
   html.dark body {
@@ -69,6 +78,20 @@
 
   .animate-soft-float {
     animation: soft-float 8s ease-in-out infinite;
+  }
+
+  /* 性能优化：为经常动画的元素启用 GPU 加速 */
+  .shadow-glow,
+  .primary-button,
+  .soft-input {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* 优化：减少重绘 */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

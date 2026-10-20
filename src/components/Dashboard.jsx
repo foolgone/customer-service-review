@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Bar,
   BarChart,
@@ -23,7 +24,8 @@ function getLabelName(value) {
   return LABEL_MAP.get(value) || value;
 }
 
-function MetricCard({ label, value, hint }) {
+// 使用 memo 优化 MetricCard
+const MetricCard = memo(function MetricCard({ label, value, hint }) {
   return (
     <div className="rounded-[24px] border border-white/60 bg-white/80 p-4 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{label}</p>
@@ -31,14 +33,127 @@ function MetricCard({ label, value, hint }) {
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
     </div>
   );
-}
+});
 
-export default function Dashboard({ analytics, reviewerStatus, hasApiKey, isDark }) {
+// 优化图表组件，添加 memo
+const TrendChart = memo(function TrendChart({ data, isDark, todayReviewCount }) {
+  return (
+    <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">最近 7 天审核趋势</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">今日审核量：{todayReviewCount}</p>
+        </div>
+        <div className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-300">
+          今日 {todayReviewCount}
+        </div>
+      </div>
+
+      <div className="mt-4 h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
+            <XAxis dataKey="date" stroke={isDark ? '#94a3b8' : '#64748b'} />
+            <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
+            <Tooltip
+              contentStyle={{
+                background: isDark ? '#0f172a' : '#ffffff',
+                border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
+                borderRadius: '16px'
+              }}
+            />
+            <Line type="monotone" dataKey="count" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+});
+
+const LabelChart = memo(function LabelChart({ data, isDark }) {
+  return (
+    <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white">标签分布</h3>
+      <div className="mt-3 h-60">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
+            <XAxis type="number" stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
+            <YAxis type="category" dataKey="name" width={84} stroke={isDark ? '#94a3b8' : '#64748b'} />
+            <Tooltip
+              contentStyle={{
+                background: isDark ? '#0f172a' : '#ffffff',
+                border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
+                borderRadius: '16px'
+              }}
+            />
+            <Bar dataKey="value" radius={[0, 16, 16, 0]} fill="#06b6d4" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+});
+
+const ScoreChart = memo(function ScoreChart({ data, isDark }) {
+  return (
+    <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white">评分分布</h3>
+      <div className="mt-3 h-60">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
+            <XAxis dataKey="name" stroke={isDark ? '#94a3b8' : '#64748b'} />
+            <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
+            <Tooltip
+              contentStyle={{
+                background: isDark ? '#0f172a' : '#ffffff',
+                border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
+                borderRadius: '16px'
+              }}
+            />
+            <Bar dataKey="value" radius={[16, 16, 0, 0]} fill="#0f172a" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+});
+
+const ProgressPieChart = memo(function ProgressPieChart({ reviewedCount, pendingCount, isDark }) {
   const pieData = [
-    { name: '已审核', value: analytics.reviewedCount },
-    { name: '待审核', value: analytics.pendingCount }
+    { name: '已审核', value: reviewedCount },
+    { name: '待审核', value: pendingCount }
   ];
 
+  return (
+    <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white">审核进度</h3>
+      <div className="mt-3 h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={82} paddingAngle={4}>
+              {pieData.map((entry, index) => (
+                <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                background: isDark ? '#0f172a' : '#ffffff',
+                border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
+                borderRadius: '16px'
+              }}
+            />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+});
+
+// 主组件也使用 memo
+export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, isDark }) {
   return (
     <section className="rounded-[32px] border border-white/60 bg-white/70 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75 md:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -64,102 +179,18 @@ export default function Dashboard({ analytics, reviewerStatus, hasApiKey, isDark
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <div className="grid gap-4">
-          <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">最近 7 天审核趋势</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">今日审核量：{analytics.todayReviewCount}</p>
-              </div>
-              <div className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-300">
-                今日 {analytics.todayReviewCount}
-              </div>
-            </div>
-
-            <div className="mt-4 h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={analytics.todaySeries}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
-                  <XAxis dataKey="date" stroke={isDark ? '#94a3b8' : '#64748b'} />
-                  <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: isDark ? '#0f172a' : '#ffffff',
-                      border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
-                      borderRadius: '16px'
-                    }}
-                  />
-                  <Line type="monotone" dataKey="count" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <TrendChart data={analytics.todaySeries} isDark={isDark} todayReviewCount={analytics.todayReviewCount} />
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white">标签分布</h3>
-              <div className="mt-3 h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analytics.labelBreakdown} layout="vertical" margin={{ left: 16 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
-                    <XAxis type="number" stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
-                    <YAxis type="category" dataKey="name" width={84} stroke={isDark ? '#94a3b8' : '#64748b'} />
-                    <Tooltip
-                      contentStyle={{
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
-                        borderRadius: '16px'
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[0, 16, 16, 0]} fill="#06b6d4" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white">评分分布</h3>
-              <div className="mt-3 h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analytics.scoreDistribution} margin={{ left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1f2937' : '#e2e8f0'} />
-                    <XAxis dataKey="name" stroke={isDark ? '#94a3b8' : '#64748b'} />
-                    <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
-                        borderRadius: '16px'
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[16, 16, 0, 0]} fill="#0f172a" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <LabelChart data={analytics.labelBreakdown} isDark={isDark} />
+            <ScoreChart data={analytics.scoreDistribution} isDark={isDark} />
           </div>
 
-          <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 md:p-5">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">审核进度</h3>
-            <div className="mt-3 h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={82} paddingAngle={4}>
-                    {pieData.map((entry, index) => (
-                      <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: isDark ? '#0f172a' : '#ffffff',
-                      border: `1px solid ${isDark ? '#1f2937' : '#e2e8f0'}`,
-                      borderRadius: '16px'
-                    }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <ProgressPieChart
+            reviewedCount={analytics.reviewedCount}
+            pendingCount={analytics.pendingCount}
+            isDark={isDark}
+          />
         </div>
 
         <div className="grid gap-4">
@@ -243,4 +274,4 @@ export default function Dashboard({ analytics, reviewerStatus, hasApiKey, isDark
       </div>
     </section>
   );
-}
+});
