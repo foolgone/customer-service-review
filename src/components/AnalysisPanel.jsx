@@ -40,17 +40,17 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
 
   return (
     <section className="rounded-[28px] border border-slate-200 bg-white/75 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">AI 仅输出建议，不会覆盖人工标注。</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setExpanded((current) => !current)}
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"
+            className="whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"
           >
             {expanded ? '收起' : '展开'}
           </button>
@@ -58,7 +58,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
             type="button"
             onClick={onAnalyze}
             disabled={isAnalyzing || !hasApiKey}
-            className="rounded-full bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isAnalyzing ? '分析中...' : '重新分析'}
           </button>

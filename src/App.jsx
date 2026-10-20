@@ -367,7 +367,7 @@ export default function App() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-5 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen overflow-x-clip px-4 py-5 sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-radial-soft opacity-100" />
 
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-5">
@@ -407,18 +407,18 @@ export default function App() {
         <Dashboard analytics={analytics} reviewerStatus={REVIEWER_PROFILE} hasApiKey={hasApiKey} isDark={isDark} />
 
         <div className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr] xl:items-start">
-          <div className="space-y-5">
+          <div className="space-y-5 xl:sticky xl:top-5 xl:self-start">
             <ConversationPanel conversation={currentConversation} currentIndex={currentIndex} totalCount={totalCount} />
           </div>
 
           <div className="space-y-5">
             <section className="rounded-[32px] border border-white/60 bg-white/75 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75 md:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">审核工作台</h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">标签、评分、备注和 AI 建议都在这里完成。</p>
                 </div>
-                <div className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+                <div className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                   自动保存状态：{saveState || '等待编辑'}
                 </div>
               </div>
@@ -460,11 +460,11 @@ export default function App() {
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">本次审核</p>
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-slate-500 dark:text-slate-400">
-                    <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">评分：{draft.score || 3} 分</div>
-                    <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">标签：{draft.labels.length}</div>
-                    <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">AI 建议：{analysisState.labels.length || 0}</div>
-                    <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">耗时：{analytics.avgDurationMs ? '可统计' : '待生成'}</div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">评分：{draft.score || 3} 分</span>
+                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">标签：{draft.labels.length}</span>
+                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">AI 建议：{analysisState.labels.length || 0}</span>
+                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">耗时：{analytics.avgDurationMs ? '可统计' : '待生成'}</span>
                   </div>
                 </div>
 
