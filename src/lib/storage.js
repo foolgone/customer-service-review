@@ -147,14 +147,41 @@ export function clearAnnotations() {
 }
 
 /**
+ * 把标注里的多选字段归一化成数组
+ * 兼容脏数据：labels 可能是字符串（如 'accurate|incomplete'）或数字
+ * @param {any} value - 原始值
+ * @returns {string[]} 标签数组
+ */
+function toStringArray(value) {
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === 'string');
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    return value
+      .split('|')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+/**
  * 标准化标注对象（确保所有字段存在）
  * @param {Object} annotation - 原始标注对象
  * @returns {Object} 标准化后的标注对象
  */
 export function normalizeAnnotation(annotation) {
-  return {
+  const merged = {
     ...DEFAULT_ANNOTATION,
-    ...annotation
+    ...(annotation || {})
+  };
+
+  return {
+    ...merged,
+    labels: toStringArray(merged.labels),
+    aiLabels: toStringArray(merged.aiLabels)
   };
 }
 

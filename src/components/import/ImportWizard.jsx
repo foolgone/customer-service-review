@@ -20,12 +20,13 @@ function computeStats(result) {
   const valid = result?.data?.length || 0;
   const invalid = (result?.errors || []).filter((item) => /^第 \d+ /.test(item)).length;
   const total = Array.isArray(result?.rows) ? result.rows.length : valid + invalid;
+  const skipped = Array.isArray(result?.skippedRows) ? result.skippedRows.length : null;
 
   return {
     total,
     valid,
     invalid,
-    dropped: Math.max(total - valid - invalid, 0)
+    dropped: skipped ?? Math.max(total - valid - invalid, 0)
   };
 }
 
@@ -134,7 +135,13 @@ export default function ImportWizard({ open, onClose, onImport }) {
     setError(remapped.data?.length ? '' : '当前字段映射下没有可导入的对话，请检查列选择');
     setResult((previous) =>
       previous
-        ? { ...previous, data: remapped.data || [], errors: remapped.errors || [], fieldMapping: nextMapping }
+        ? {
+            ...previous,
+            data: remapped.data || [],
+            skippedRows: remapped.skippedRows || [],
+            errors: remapped.errors || [],
+            fieldMapping: nextMapping
+          }
         : previous
     );
   };

@@ -3,9 +3,40 @@ import { LABELS, SCORE_LEVELS } from './constants';
 const LABEL_VALUE_MAP = new Map(LABELS.map((item) => [item.value, item]));
 
 function getTimestamp(annotation) {
-  const candidate = annotation.reviewedAt || annotation.updatedAt || annotation.aiAt || annotation.startedAt;
-  const timestamp = new Date(candidate).getTime();
-  return Number.isNaN(timestamp) ? 0 : timestamp;
+  const candidates = [annotation.reviewedAt, annotation.updatedAt, annotation.aiAt, annotation.startedAt];
+
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    const timestamp = new Date(candidate).getTime();
+    if (!Number.isNaN(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * 把多选标签归一化成数组，兼容字符串等脏数据，避免统计页因类型错误白屏
+ * @param {any} value - 原始 labels/aiLabels
+ * @returns {string[]} 标签数组
+ */
+function toLabelArray(value) {
+  if (Array.isArray(value)) {
+    return value.filter((label) => typeof label === 'string');
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    return value
+      .split('|')
+      .map((label) => label.trim())
+      .filter(Boolean);
+  }
+
+  return [];
 }
 
 function getDayStart(timestamp) {
@@ -55,9 +86,14 @@ function getUserPreview(conversation) {
 export function buildAnalytics(conversations, annotations) {
   const conversationMap = buildConversationMap(conversations);
   const records = Object.entries(annotations || {})
-    .map(([id, annotation]) => ({ id, ...annotation, timestamp: getTimestamp(annotation) }))
+    .map(([id, annotation]) => ({
+      id,
+      ...annotation,
+      labels: toLabelArray(annotation?.labels),
+      timestamp: getTimestamp(annotation || {})
+    }))
     .filter((record) => conversationMap.has(record.id))
-    .filter((record) => record.timestamp > 0 || record.labels?.length || record.comment || record.score);
+    .filter((record) => record.timestamp > 0 || record.labels.length || record.comment || record.score);
 
   const reviewedCount = records.length;
   const totalCount = conversations.length;

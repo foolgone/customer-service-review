@@ -3,7 +3,7 @@
  */
 
 import * as XLSX from 'xlsx';
-import { validateConversations } from './validator';
+import { getMissingFieldReason, validateConversations, validateFieldMapping } from './validator';
 
 /**
  * 解析 Excel 文件
@@ -60,10 +60,18 @@ export async function parseExcel(file, options = {}) {
     // 自动检测字段映射
     const fieldMapping = options.fieldMapping || autoDetectFieldMapping(rows[0]);
 
-    // 转换为标准格式
-    const conversations = rows.map((row, index) => {
-      return rowToConversation(row, fieldMapping, index);
-    }).filter(conv => conv !== null);
+    // 转换为标准格式（同时记录被跳过的行，便于向用户反馈）
+    const conversations = [];
+    const skippedRows = [];
+
+    rows.forEach((row, index) => {
+      const conversation = rowToConversation(row, fieldMapping, index);
+      if (conversation) {
+        conversations.push(conversation);
+      } else {
+        skippedRows.push({ row: index + 1, reason: getMissingFieldReason(row, fieldMapping) });
+      }
+    });
 
     // 验证数据
     const { valid, invalid } = validateConversations(conversations);
@@ -75,6 +83,7 @@ export async function parseExcel(file, options = {}) {
       success: true,
       data: valid,
       rows,
+      skippedRows,
       errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
       sheets: sheetNames,
       preview,
@@ -193,10 +202,28 @@ export function getAvailableColumns(rows) {
  */
 export function reMapExcelData(rows, fieldMapping) {
   try {
-    // 转换数据
-    const conversations = rows.map((row, index) => {
-      return rowToConversation(row, fieldMapping, index);
-    }).filter(conv => conv !== null);
+    // BUG-05：与 reMapCSVData 对齐，先校验字段映射，缺字段时明确返回失败
+    const mappingValidation = validateFieldMapping(fieldMapping);
+    if (!mappingValidation.valid) {
+      return {
+        success: false,
+        data: [],
+        errors: mappingValidation.errors
+      };
+    }
+
+    // 转换数据（同时记录被跳过的行）
+    const conversations = [];
+    const skippedRows = [];
+
+    rows.forEach((row, index) => {
+      const conversation = rowToConversation(row, fieldMapping, index);
+      if (conversation) {
+        conversations.push(conversation);
+      } else {
+        skippedRows.push({ row: index + 1, reason: getMissingFieldReason(row, fieldMapping) });
+      }
+    });
 
     // 验证数据
     const { valid, invalid } = validateConversations(conversations);
@@ -204,6 +231,7 @@ export function reMapExcelData(rows, fieldMapping) {
     return {
       success: true,
       data: valid,
+      skippedRows,
       errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
     };
   } catch (error) {

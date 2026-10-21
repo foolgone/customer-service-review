@@ -122,19 +122,35 @@ export function deepClone(obj) {
     return new Date(obj.getTime());
   }
 
-  if (obj instanceof Array) {
-    return obj.map(item => deepClone(item));
+  // BUG-11：补齐 RegExp / Map / Set 的克隆，避免被当成普通对象变成 {}
+  if (obj instanceof RegExp) {
+    return new RegExp(obj.source, obj.flags);
   }
 
-  if (obj instanceof Object) {
-    const clonedObj = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key]);
-      }
-    }
-    return clonedObj;
+  if (obj instanceof Map) {
+    const clonedMap = new Map();
+    obj.forEach((value, key) => {
+      clonedMap.set(deepClone(key), deepClone(value));
+    });
+    return clonedMap;
   }
+
+  if (obj instanceof Set) {
+    const clonedSet = new Set();
+    obj.forEach((value) => clonedSet.add(deepClone(value)));
+    return clonedSet;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepClone(item));
+  }
+
+  // 用原型创建，兼容 Object.create(null) 这类无原型对象（不再依赖 hasOwnProperty）
+  const clonedObj = Object.create(Object.getPrototypeOf(obj));
+  Object.keys(obj).forEach((key) => {
+    clonedObj[key] = deepClone(obj[key]);
+  });
+  return clonedObj;
 }
 
 /**

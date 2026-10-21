@@ -6,7 +6,7 @@ import Dashboard from './components/Dashboard';
 import LabelSelector from './components/LabelSelector';
 import ScoreSelector from './components/ScoreSelector';
 import { buildAnalytics } from './lib/analytics';
-import { DEFAULT_ANNOTATION, DEEPSEEK_DEFAULT_MODEL, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE } from './lib/constants';
+import { DEFAULT_ANNOTATION, DEEPSEEK_DEFAULT_MODEL, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
 import { exportConversationsToCsv } from './lib/csv';
 import { analyzeWithDeepSeek } from './lib/deepseek';
 import { addImportHistory, loadAnnotations, normalizeAnnotation, saveAnnotations } from './lib/storage';
@@ -52,6 +52,19 @@ function getDurationMs(startedAt) {
   return Number.isNaN(start) ? 0 : Math.max(Date.now() - start, 0);
 }
 
+// 把网络层异常统一转成中文提示（BUG-09）：浏览器真实网络错误是 TypeError('Failed to fetch')
+function getLoadErrorMessage(loadError) {
+  if (loadError instanceof TypeError) {
+    return '读取对话数据失败：网络异常，请检查网络连接后重试';
+  }
+
+  if (loadError instanceof Error && loadError.message) {
+    return loadError.message;
+  }
+
+  return '读取对话数据失败';
+}
+
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
   const [conversations, setConversations] = useState([]);
@@ -69,6 +82,8 @@ export default function App() {
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
   const reviewStartedAtRef = useRef(Date.now());
+  // 标记「AI 建议已保存」刚设置过，避免被同一轮自动保存提示立刻覆盖（BUG-10）
+  const aiNoticeRef = useRef(false);
   const currentConversation = conversations[currentIndex];
 
   useEffect(() => {
@@ -90,7 +105,7 @@ export default function App() {
         }
       } catch (loadError) {
         if (!ignore) {
-          setError(loadError instanceof Error ? loadError.message : '读取对话数据失败');
+          setError(getLoadErrorMessage(loadError));
           setLoading(false);
         }
       }
@@ -151,6 +166,13 @@ export default function App() {
     }
 
     saveAnnotations(annotations);
+
+    if (aiNoticeRef.current) {
+      // 保留「AI 建议已保存」提示，不覆盖
+      aiNoticeRef.current = false;
+      return;
+    }
+
     setSaveState(`已自动保存 · ${new Date().toLocaleTimeString('zh-CN', { hour12: false })}`);
   }, [annotations, conversations.length]);
 
@@ -210,6 +232,14 @@ export default function App() {
     persistDraft({ ...draft, score });
   };
 
+  // 快捷键 Alt+1~5 传入的是数字 1~5，需要按「Alt+1 = 5 分」映射后才是真实分值
+  const handleScoreShortcut = (shortcutKey) => {
+    const score = SCORE_SHORTCUT_VALUE_MAP.get(Number(shortcutKey));
+    if (score) {
+      handleScoreChange(score);
+    }
+  };
+
   const handleCommentChange = (event) => {
     persistDraft({ ...draft, comment: event.target.value });
   };
@@ -267,6 +297,7 @@ export default function App() {
       });
 
       const nowIso = getNowIso();
+      aiNoticeRef.current = true;
       setAnnotations((previous) => {
         const existing = normalizeAnnotation(previous[currentConversation.id] || DEFAULT_ANNOTATION);
         const nextAnnotation = normalizeAnnotation({
@@ -383,7 +414,7 @@ export default function App() {
     onAnalyze: handleAnalyze,
     onToggleTheme: toggleTheme,
     onToggleLabelShortcut: handleShortcutLabel,
-    onSetScoreShortcut: handleScoreChange
+    onSetScoreShortcut: handleScoreShortcut
   });
 
   if (loading) {

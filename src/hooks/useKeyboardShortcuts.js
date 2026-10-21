@@ -28,6 +28,12 @@ export function useKeyboardShortcuts({
         return;
       }
 
+      // 其余 Ctrl/Cmd 组合键（Ctrl+A 全选、Ctrl+D 收藏、Ctrl+1~6 切标签页等）交还给浏览器，
+      // 避免误触发 AI 分析、主题切换、标签选择等业务动作
+      if (event.ctrlKey || event.metaKey) {
+        return;
+      }
+
       if (editable) {
         return;
       }

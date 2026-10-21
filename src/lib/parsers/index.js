@@ -14,8 +14,8 @@ import { validateFile } from './validator';
  * @returns {Promise<Object>} 解析结果
  */
 export async function parseFile(file, options = {}) {
-  // 验证文件
-  const validation = validateFile(file);
+  // 验证文件（把调用方选项透传给 validateFile：支持自定义扩展名白名单 / 大小上限）
+  const validation = validateFile(file, options);
   if (!validation.valid) {
     return {
       success: false,

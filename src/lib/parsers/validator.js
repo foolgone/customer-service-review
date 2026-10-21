@@ -79,19 +79,67 @@ function validateTurn(turn, index) {
 }
 
 /**
+ * 获取「行无法转换为对话」的具体原因，用于把被跳过的行反馈给用户
+ * @param {Object} row - 原始行对象
+ * @param {Object} fieldMapping - 字段映射
+ * @returns {string} 缺失描述
+ */
+export function getMissingFieldReason(row, fieldMapping) {
+  const fieldLabels = { id: '对话 ID', user: '用户消息', assistant: '客服回复' };
+  const missing = [];
+  let unreadable = false;
+
+  ['id', 'user', 'assistant'].forEach((field) => {
+    const column = fieldMapping?.[field];
+
+    try {
+      const value = column ? String(row?.[column] ?? '').trim() : '';
+      if (!value) {
+        missing.push(field);
+      }
+    } catch {
+      unreadable = true;
+    }
+  });
+
+  if (unreadable) {
+    return '单元格数据无法读取';
+  }
+
+  if (!missing.length) {
+    return '无法解析为对话数据';
+  }
+
+  return `缺少必填字段：${missing.map((field) => fieldLabels[field]).join('、')}`;
+}
+
+/**
  * 验证文件
+ * 说明：文件类型默认以【扩展名】为权威判断——浏览器/操作系统给出的 MIME 并不可靠
+ * （例如 Windows 上 .csv 常被报成 application/vnd.ms-excel）。
+ * - 未传 allowedTypes（默认）：MIME 不一致只告警，不阻断；
+ * - 显式传入 allowedTypes：按该白名单严格拦截，保证参数语义有效。
  * @param {File} file - 文件对象
  * @param {Object} options - 验证选项
  * @returns {Object} { valid: boolean, error: string|null }
  */
+const DEFAULT_ALLOWED_TYPES = [
+  'application/json',
+  'text/csv',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain'
+];
+
 export function validateFile(file, options = {}) {
+  if (!file || typeof file !== 'object') {
+    return {
+      valid: false,
+      error: '未选择文件'
+    };
+  }
+
   const {
-    allowedTypes = [
-      'application/json',
-      'text/csv',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain'
-    ],
+    allowedTypes = null,
     allowedExtensions = ['json', 'csv', 'xlsx', 'xls', 'txt'],
     maxSize = 10 * 1024 * 1024 // 10MB
   } = options;
@@ -123,9 +171,18 @@ export function validateFile(file, options = {}) {
     };
   }
 
-  // MIME 仅作参考：与扩展名不一致时以扩展名为准（浏览器/系统给出的 MIME 并不可靠）
-  if (file.type && !allowedTypes.includes(file.type)) {
-    console.warn(`文件 MIME 与扩展名不一致（${file.type} / .${ext}），按扩展名处理`);
+  // MIME：显式传入 allowedTypes 时严格按白名单拦截（BUG-04）；未传时以扩展名为准，仅告警
+  if (file.type) {
+    if (allowedTypes) {
+      if (!allowedTypes.includes(file.type)) {
+        return {
+          valid: false,
+          error: `不支持的文件类型：${file.type}。支持：${allowedTypes.join(', ')}`
+        };
+      }
+    } else if (!DEFAULT_ALLOWED_TYPES.includes(file.type)) {
+      console.warn(`文件 MIME 与扩展名不一致（${file.type} / .${ext}），按扩展名处理`);
+    }
   }
 
   return { valid: true, error: null };
@@ -137,6 +194,13 @@ export function validateFile(file, options = {}) {
  * @returns {Object} { valid: boolean, errors: string[] }
  */
 export function validateFieldMapping(mapping) {
+  if (!mapping || typeof mapping !== 'object') {
+    return {
+      valid: false,
+      errors: ['字段映射不能为空']
+    };
+  }
+
   const errors = [];
   const requiredFields = ['id', 'user', 'assistant'];
 

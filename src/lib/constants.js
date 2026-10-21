@@ -15,6 +15,11 @@ export const SCORE_LEVELS = [
   { value: 1, label: '1 分', description: '严重风险', shortcut: 'Alt+5' }
 ];
 
+// 快捷键数字 → 分值：Alt+1 = 5 分（优秀），Alt+5 = 1 分（严重风险）
+export const SCORE_SHORTCUT_VALUE_MAP = new Map(
+  SCORE_LEVELS.map((item) => [Number(item.shortcut.replace('Alt+', '')), item.value])
+);
+
 export const QUICK_SHORTCUTS = [
   { key: 'Enter', label: '下一条' },
   { key: 'Ctrl + S', label: '保存' },

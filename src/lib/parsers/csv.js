@@ -3,7 +3,7 @@
  */
 
 import Papa from 'papaparse';
-import { validateConversations } from './validator';
+import { getMissingFieldReason, validateConversations } from './validator';
 
 /**
  * 解析 CSV 文件
@@ -33,10 +33,18 @@ export async function parseCSV(file, options = {}) {
           // 自动检测字段映射或使用提供的映射
           const fieldMapping = options.fieldMapping || autoDetectFieldMapping(results.data[0]);
 
-          // 转换为标准格式
-          const conversations = results.data.map((row, index) => {
-            return rowToConversation(row, fieldMapping, index);
-          }).filter(conv => conv !== null);
+          // 转换为标准格式（同时记录被跳过的行，便于向用户反馈）
+          const conversations = [];
+          const skippedRows = [];
+
+          results.data.forEach((row, index) => {
+            const conversation = rowToConversation(row, fieldMapping, index);
+            if (conversation) {
+              conversations.push(conversation);
+            } else {
+              skippedRows.push({ row: index + 1, reason: getMissingFieldReason(row, fieldMapping) });
+            }
+          });
 
           // 验证数据
           const { valid, invalid } = validateConversations(conversations);
@@ -48,6 +56,7 @@ export async function parseCSV(file, options = {}) {
             success: true,
             data: valid,
             rows: results.data,
+            skippedRows,
             errors: [
               ...results.errors.map(err => `解析错误：${err.message}`),
               ...invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
@@ -204,10 +213,18 @@ export function reMapCSVData(rows, fieldMapping) {
       };
     }
 
-    // 转换数据
-    const conversations = rows.map((row, index) => {
-      return rowToConversation(row, fieldMapping, index);
-    }).filter(conv => conv !== null);
+    // 转换数据（同时记录被跳过的行）
+    const conversations = [];
+    const skippedRows = [];
+
+    rows.forEach((row, index) => {
+      const conversation = rowToConversation(row, fieldMapping, index);
+      if (conversation) {
+        conversations.push(conversation);
+      } else {
+        skippedRows.push({ row: index + 1, reason: getMissingFieldReason(row, fieldMapping) });
+      }
+    });
 
     // 验证数据
     const { valid, invalid } = validateConversations(conversations);
@@ -215,6 +232,7 @@ export function reMapCSVData(rows, fieldMapping) {
     return {
       success: true,
       data: valid,
+      skippedRows,
       errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
     };
   } catch (error) {

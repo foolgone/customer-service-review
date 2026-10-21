@@ -107,6 +107,21 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
         </div>
       </div>
 
+      {result?.skippedRows?.length ? (
+        <details className="rounded-2xl border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
+          <summary className="cursor-pointer font-medium">
+            已跳过 {result.skippedRows.length} 行（缺必填字段，不会导入）
+          </summary>
+          <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto pr-2">
+            {result.skippedRows.slice(0, 50).map((item) => (
+              <li key={`skip-${item.row}`} className="leading-6">
+                · 第 {item.row} 行：{item.reason}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
       {result?.errors?.length ? (
         <details className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
           <summary className="cursor-pointer font-medium text-slate-700 dark:text-slate-200">

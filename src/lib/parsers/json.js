@@ -33,17 +33,17 @@ export async function parseJSON(file) {
       // 数组格式：[{id, turns}, ...]
       conversations = rawData;
     } else if (rawData && typeof rawData === 'object') {
-      // 单个对话对象：{id, turns}
-      if (rawData.id && rawData.turns) {
-        conversations = [rawData];
-      }
       // 或包装对象：{conversations: [...]}
-      else if (Array.isArray(rawData.conversations)) {
+      if (Array.isArray(rawData.conversations)) {
         conversations = rawData.conversations;
       }
       // 或包装对象：{data: [...]}
       else if (Array.isArray(rawData.data)) {
         conversations = rawData.data;
+      }
+      // 单个对话对象（含字段不完整的情况）：交给验证器报「缺少对话内容（turns）」等具体原因（BUG-07）
+      else if ('id' in rawData || 'turns' in rawData) {
+        conversations = [rawData];
       } else {
         return {
           success: false,
