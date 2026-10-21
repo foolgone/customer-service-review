@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { AI_MODEL_OPTIONS, DEFAULT_SETTINGS, normalizeSettings } from '../../lib/settings';
 import {
@@ -36,6 +36,19 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
   const fileInputRef = useRef(null);
   const dialogRef = useDialogA11y({ open, onClose });
 
+  // 打开（或重新挂载）时同步表单草稿；打开期间父级设置因自身保存而变化时不重置草稿与提示
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      setApiKey(settings.apiKey || '');
+      setModel(settings.model || DEFAULT_SETTINGS.model);
+      setConcurrency(settings.concurrency || DEFAULT_SETTINGS.concurrency);
+      setMessage({ type: '', text: '' });
+    }
+
+    wasOpenRef.current = open;
+  }, [open, settings.apiKey, settings.model, settings.concurrency]);
+
   if (!open) {
     return null;
   }
@@ -47,9 +60,13 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
     setMessage({ type: 'success', text: '设置已保存' });
   };
 
+  // 只清除 Key，不连带提交未保存的模型/并发草稿（BUG-29）
   const handleClearKey = () => {
+    const base = normalizeSettings({ ...settings, apiKey: '' });
     setApiKey('');
-    onSave?.(normalizeSettings({ apiKey: '', model, concurrency }));
+    setModel(base.model);
+    setConcurrency(base.concurrency);
+    onSave?.(base);
     setMessage({ type: 'success', text: '已清除 API Key' });
   };
 
@@ -73,11 +90,20 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      importAllData(data, true);
+      const result = importAllData(data, true);
+
+      if (!result.restored) {
+        setMessage({
+          type: 'error',
+          text: result.reason === 'invalid' ? '备份格式无效，请选择本应用导出的备份文件' : '备份中没有可恢复的数据'
+        });
+        return;
+      }
+
       onDataRestored?.();
-      setMessage({ type: 'success', text: '备份已恢复' });
-    } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : '备份恢复失败' });
+      setMessage({ type: 'success', text: `备份已恢复（${result.fields.join('、')}）` });
+    } catch {
+      setMessage({ type: 'error', text: '备份文件不是有效的 JSON，恢复失败' });
     }
   };
 
@@ -100,7 +126,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onClose();
+          onClose?.();
         }
       }}
     >
@@ -238,6 +264,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
             <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
               当前配置版本：{storedConfig?.autoSave ? '自动保存开启' : '自动保存关闭'} ｜ 导入历史 {importHistoryCount} 条
             </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">备份只包含标注、主题与 AI 配置（不含 API Key）</p>
           </section>
         </div>
 

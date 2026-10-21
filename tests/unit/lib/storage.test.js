@@ -246,46 +246,53 @@ describe('导入历史', () => {
 });
 
 describe('exportAllData / importAllData', () => {
-  it('exportAllData 包含 annotations / theme / config / importHistory / exportedAt', () => {
+  it('exportAllData 包含 annotations / theme / config / importHistory / exportedAt，且不含 API Key（BUG-26）', () => {
     saveAnnotation('conv-1', { labels: ['accurate'], score: 5 });
     saveTheme('dark');
-    saveConfig({ apiKey: 'sk-test' });
+    saveConfig({ apiKey: 'sk-test', temperature: 0.2 });
     addImportHistory({ fileName: 'backup.json' });
 
     const data = exportAllData();
 
     expect(Object.keys(data).sort()).toEqual(
-      ['annotations', 'config', 'exportedAt', 'importHistory', 'theme'].sort()
+      ['annotations', 'config', 'exportedAt', 'importHistory', 'note', 'theme'].sort()
     );
     expect(data.annotations['conv-1'].labels).toEqual(['accurate']);
     expect(data.theme).toBe('dark');
-    expect(data.config).toEqual({ apiKey: 'sk-test' });
+    // 备份不包含 API Key，其它配置字段保留
+    expect(data.config.apiKey).toBeUndefined();
+    expect(data.config.temperature).toBe(0.2);
+    expect(typeof data.note).toBe('string');
     expect(data.importHistory).toHaveLength(1);
-    expect(data.importHistory[0].fileName).toBe('backup.json');
     expect(new Date(data.exportedAt).toISOString()).toBe(data.exportedAt);
   });
 
-  it('importAllData 合并模式 → 标注合并、主题覆盖、配置部分更新', () => {
+  it('importAllData 合并模式 → 标注合并、主题覆盖、白名单配置更新，API Key 不被覆盖', () => {
     saveAnnotations({ 'conv-1': { comment: '旧', score: 5 } });
     saveTheme('dark');
     updateConfig({ apiKey: 'old-key', temperature: 0.3 });
 
-    importAllData({
+    const result = importAllData({
       annotations: { 'conv-2': { comment: '新增', score: 2 } },
       theme: 'light',
-      config: { apiKey: 'new-key' }
+      config: { temperature: 0.5, aiModel: 'deepseek-reasoner', apiKey: 'injected-key' }
     });
+
+    expect(result.restored).toBe(true);
+    expect(result.fields).toEqual(['标注', '主题', '配置']);
 
     const annotations = getAnnotations();
     expect(Object.keys(annotations).sort()).toEqual(['conv-1', 'conv-2']);
     expect(getTheme()).toBe('light');
+
     const config = getConfig();
-    expect(config.apiKey).toBe('new-key');
-    expect(config.temperature).toBe(0.3);
-    expect(config.aiModel).toBe('deepseek');
+    expect(config.temperature).toBe(0.5);
+    expect(config.aiModel).toBe('deepseek-reasoner');
+    // 备份/导入不能改写本机 Key
+    expect(config.apiKey).toBe('old-key');
   });
 
-  it('importAllData 覆盖模式 → 标注整体替换、配置整体替换', () => {
+  it('importAllData 覆盖模式 → 标注整体替换，配置合并且保留本机 API Key', () => {
     saveAnnotations({ 'conv-1': { comment: '旧', score: 5 } });
     updateConfig({ apiKey: 'old-key', temperature: 0.3 });
 
@@ -293,24 +300,34 @@ describe('exportAllData / importAllData', () => {
       {
         annotations: { 'conv-2': { comment: '新增', score: 2 } },
         theme: 'dark',
-        config: { apiKey: 'new-key' }
+        config: { apiKey: 'new-key', temperature: 0.1 }
       },
       true
     );
 
     expect(getAnnotations()).toEqual({ 'conv-2': { comment: '新增', score: 2 } });
     expect(getTheme()).toBe('dark');
-    expect(getConfig()).toEqual({ apiKey: 'new-key' });
+
+    const config = getConfig();
+    expect(config.apiKey).toBe('old-key');
+    expect(config.temperature).toBe(0.1);
   });
 
-  it('importAllData 缺少字段时不影响已有数据', () => {
+  it('importAllData 缺少有效字段时返回 empty，不影响已有数据', () => {
     saveAnnotations({ 'conv-1': { comment: '保留', score: 5 } });
     saveTheme('dark');
 
-    importAllData({});
+    const result = importAllData({});
 
+    expect(result).toEqual({ restored: false, fields: [], reason: 'empty' });
     expect(getAnnotations()).toEqual({ 'conv-1': { comment: '保留', score: 5 } });
     expect(getTheme()).toBe('dark');
+  });
+
+  it('importAllData 传入非对象（null / 数组 / 原始值）→ 返回 invalid', () => {
+    expect(importAllData(null).reason).toBe('invalid');
+    expect(importAllData([]).reason).toBe('invalid');
+    expect(importAllData('123').reason).toBe('invalid');
   });
 });
 

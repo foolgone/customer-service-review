@@ -231,7 +231,7 @@ describe('SettingsPanel 补充 · 导出标注备份与安全取证', () => {
     expect(captured.anchors[0].download).toBe(`质检标注备份-${new Date().toISOString().slice(0, 10)}.json`);
 
     const backup = JSON.parse(await captured.blob.text());
-    expect(Object.keys(backup).sort()).toEqual(['annotations', 'config', 'exportedAt', 'importHistory', 'theme']);
+    expect(Object.keys(backup).sort()).toEqual(['annotations', 'config', 'exportedAt', 'importHistory', 'note', 'theme']);
     expect(backup.annotations).toEqual({ '001': { labels: ['accurate'], score: 5 } });
     expect(backup.theme).toBe('dark');
     expect(backup.importHistory).toHaveLength(1);
@@ -239,7 +239,7 @@ describe('SettingsPanel 补充 · 导出标注备份与安全取证', () => {
     expect(Number.isNaN(Date.parse(backup.exportedAt))).toBe(false);
   });
 
-  it('安全取证：导出备份包含明文 config.apiKey（疑似缺陷：备份文件泄露 API Key）', async () => {
+  it('安全：导出备份不包含 API Key（BUG-26 已修复）', async () => {
     const user = userEvent.setup();
     saveConfig({ ...getConfig(), apiKey: 'sk-forensics-plain-123', autoSave: true });
     const captured = spyDownload();
@@ -247,13 +247,13 @@ describe('SettingsPanel 补充 · 导出标注备份与安全取证', () => {
     renderPanel();
     await user.click(screen.getByRole('button', { name: '导出标注备份' }));
 
-    const backup = JSON.parse(await captured.blob.text());
+    const raw = await captured.blob.text();
+    const backup = JSON.parse(raw);
 
-    // 现状取证：备份 JSON 里 config.apiKey 为明文原值，未脱敏 / 未剔除
-    expect(backup.config.apiKey).toBe('sk-forensics-plain-123');
-    expect(JSON.stringify(backup)).toContain('sk-forensics-plain-123');
-    // 对照：没有任何脱敏痕迹
-    expect(JSON.stringify(backup)).not.toContain('***');
+    // 备份里不再出现明文 Key，且有说明字段
+    expect(raw).not.toContain('sk-forensics-plain-123');
+    expect(backup.config.apiKey).toBeUndefined();
+    expect(typeof backup.note).toBe('string');
   });
 
   it('导出失败抛 Error → 展示 error.message；抛非 Error → 展示兜底「备份导出失败」', async () => {
@@ -277,48 +277,49 @@ describe('SettingsPanel 补充 · 导出标注备份与安全取证', () => {
   });
 });
 
-describe('SettingsPanel 补充 · 导入备份边界', () => {
-  it('导入空对象 {} → 当前提示「备份已恢复」并回调，但实际无任何数据写入（疑似缺陷：假成功）', async () => {
+describe('SettingsPanel 补充 · 导入备份边界（BUG-27 已修复）', () => {
+  it('导入空对象 {} → 提示「备份中没有可恢复的数据」，不回调、不写数据', async () => {
     const user = userEvent.setup();
     const { props, container } = renderPanel();
     saveAnnotations({ '001': { labels: ['accurate'] } });
 
     await user.upload(getFileInput(container), makeFile('{}', 'empty.json'));
 
-    await waitFor(() => expect(props.onDataRestored).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText('备份中没有可恢复的数据')).toBeInTheDocument();
+    expect(props.onDataRestored).not.toHaveBeenCalled();
 
-    // 取证：没有任何字段，importAllData 什么也没写；提示成功会误导用户
+    // 数据保持原样
     expect(getAnnotations()).toEqual({ '001': { labels: ['accurate'] } });
     expect(getTheme()).toBe('light');
     expect(getImportHistory()).toEqual([]);
     expect(localStorage.getItem(CONFIG_KEY)).toBeNull();
   });
 
-  it('导入非对象 JSON（"123" / "[]"）→ 按当前行为仍提示「备份已恢复」（疑似缺陷：无格式校验）', async () => {
+  it('导入非对象 JSON（"123" / "[]"）→ 提示「备份格式无效」且不回调', async () => {
     const user = userEvent.setup();
     const { props, container } = renderPanel();
     const fileInput = getFileInput(container);
 
     await user.upload(fileInput, makeFile('123', 'number.json'));
-    await waitFor(() => expect(props.onDataRestored).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText(/备份格式无效/)).toBeInTheDocument();
 
     await user.upload(fileInput, makeFile('[]', 'array.json'));
-    await waitFor(() => expect(props.onDataRestored).toHaveBeenCalledTimes(2));
-    expect(screen.getByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText(/备份格式无效/)).toBeInTheDocument();
+
+    expect(props.onDataRestored).not.toHaveBeenCalled();
     expect(localStorage.getItem(ANNOTATIONS_KEY)).toBeNull();
   });
 
-  it('导入 JSON "null" → 抛 TypeError 被捕获，错误信息透传引擎原文（疑似缺陷：无友好提示）', async () => {
+  it('导入 JSON "null" → 友好提示「备份格式无效」，不再透传引擎错误', async () => {
     const user = userEvent.setup();
     const { props, container } = renderPanel();
 
     await user.upload(getFileInput(container), makeFile('null', 'null.json'));
 
-    expect(await screen.findByText(/Cannot read properties of null/)).toBeInTheDocument();
+    expect(await screen.findByText(/备份格式无效/)).toBeInTheDocument();
+    expect(screen.queryByText(/Cannot read properties of null/)).not.toBeInTheDocument();
     expect(props.onDataRestored).not.toHaveBeenCalled();
-    expect(screen.queryByText('备份已恢复')).not.toBeInTheDocument();
+    expect(screen.queryByText(/备份已恢复/)).not.toBeInTheDocument();
   });
 
   it('取消文件选择（change 无 file）→ 无提示变化、不回调、不报错', () => {
@@ -331,7 +332,7 @@ describe('SettingsPanel 补充 · 导入备份边界', () => {
     expect(props.onDataRestored).not.toHaveBeenCalled();
   });
 
-  it('导入文件读取抛非 Error → 展示兜底「备份恢复失败」', async () => {
+  it('导入文件读取抛非 Error → 统一提示「备份文件不是有效的 JSON」', async () => {
     const user = userEvent.setup();
     const { props, container } = renderPanel();
     const file = makeFile('{}', 'broken.json');
@@ -341,11 +342,11 @@ describe('SettingsPanel 补充 · 导入备份边界', () => {
 
     await user.upload(getFileInput(container), file);
 
-    expect(await screen.findByText('备份恢复失败')).toBeInTheDocument();
+    expect(await screen.findByText('备份文件不是有效的 JSON，恢复失败')).toBeInTheDocument();
     expect(props.onDataRestored).not.toHaveBeenCalled();
   });
 
-  it('导入含 config 的备份 → 整对象覆盖本地配置（取证：可改写 apiKey 且丢弃既有配置字段）', async () => {
+  it('导入含 config 的备份 → 只应用白名单字段，API Key 与本机其它配置不被改写（BUG-26 已修复）', async () => {
     const user = userEvent.setup();
     const { props, container } = renderPanel();
     saveConfig({ ...getConfig(), apiKey: 'sk-current', autoSave: true, temperature: 0.7 });
@@ -356,12 +357,13 @@ describe('SettingsPanel 补充 · 导入备份边界', () => {
     );
 
     await waitFor(() => expect(props.onDataRestored).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText(/备份已恢复（配置）/)).toBeInTheDocument();
 
-    // 取证：备份里的 config 被整对象覆盖（非合并），既有 aiModel/temperature 等字段丢失
-    expect(getConfig()).toEqual({ apiKey: 'sk-injected', autoSave: false });
-    expect(getConfig().temperature).toBeUndefined();
-    // 面板重渲染后文案随覆盖后的 autoSave 变化
+    // 白名单字段生效，Key 与未提供字段保持不变
+    const config = getConfig();
+    expect(config.apiKey).toBe('sk-current');
+    expect(config.autoSave).toBe(false);
+    expect(config.temperature).toBe(0.7);
     expect(screen.getByText(/自动保存关闭 ｜ 导入历史 0 条/)).toBeInTheDocument();
   });
 });
@@ -390,7 +392,7 @@ describe('SettingsPanel 补充 · 缺省回调容错', () => {
     expect(localStorage.getItem(ANNOTATIONS_KEY)).toBe('{}');
 
     await user.upload(getFileInput(container), makeFile({ annotations: { '002': { labels: ['risky'] } } }, 'ok.json'));
-    expect(await screen.findByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText(/备份已恢复/)).toBeInTheDocument();
     expect(getAnnotations()['002'].labels).toEqual(['risky']);
   });
 });

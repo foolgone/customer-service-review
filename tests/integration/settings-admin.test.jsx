@@ -96,7 +96,7 @@ async function uploadBackup(user, dialog, data) {
   const input = dialog.querySelector('input[type="file"]');
   const file = new File([JSON.stringify(data)], 'backup.json', { type: 'application/json' });
   await user.upload(input, file);
-  await within(dialog).findByText('备份已恢复');
+  await within(dialog).findByText(/备份已恢复/);
 }
 
 function makeAnnotation(overrides = {}) {
@@ -211,7 +211,7 @@ describe('A. 设置保存与运行时生效', () => {
 // -------------------- B. 备份导入 --------------------
 
 describe('B. 备份导入', () => {
-  it('导入备份 → 标注/已标注计数/Dashboard/当前草稿刷新，009 保留；但备份中的 API Key 未刷新运行时（按钮仍禁用）', async () => {
+  it('导入备份 → 标注/已标注计数/Dashboard/当前草稿刷新；备份中的 API Key 不会被应用（BUG-26）', async () => {
     // 先有一条「当前数据集之外」的标注，验证备份合并后不会被误删
     saveAnnotations({
       '009': makeAnnotation({ labels: ['accurate'], score: 5, comment: '未知对话', reviewedAt: '2026-10-20T08:00:00.000Z' })
@@ -243,25 +243,25 @@ describe('B. 备份导入', () => {
       expect(within(screen.getByText('已审核数量').parentElement).getByText('1')).toBeInTheDocument();
     });
     expect(readAnnotations()['009']).toBeTruthy();
-    // 恢复成功提示可能被紧随其后的自动保存提示覆盖（BUG-15 同类时序），两种文案都接受
-    expect(saveStatus()).toHaveTextContent(/已自动保存|本地数据已更新/);
+    // BUG-28：恢复成功提示不再被自动保存覆盖
+    expect(saveStatus()).toHaveTextContent('本地数据已更新');
 
-    // config 已写入 localStorage
-    expect(readConfig()).toMatchObject({ apiKey: 'sk-backup', aiModel: 'deepseek-reasoner', concurrency: 2 });
+    // 白名单配置已写入（apiKey 不在备份白名单内，不会被写盘）
+    expect(readConfig()).toMatchObject({ aiModel: 'deepseek-reasoner', concurrency: 2 });
+    expect(readConfig().apiKey || '').toBe('');
 
-    // 重点取证：面板输入框仍是打开时的运行时旧值（空 Key），导入的 config 未同步到 App 状态
+    // 运行时状态已通过 onDataRestored 刷新（BUG-25）；无 Key → 按钮保持禁用
     expect(within(dialog).getByLabelText(KEY_LABEL)).toHaveValue('');
     await closeSettings(user);
     expect(actionButton('AI 分析')).toBeDisabled();
     expect(actionButton('批量分析')).toBeDisabled();
 
-    // 重开设置仍是旧值，而存储里已是备份值 —— 运行时与持久化不一致
     await openSettings(user);
     expect(within(settingsDialog()).getByLabelText(KEY_LABEL)).toHaveValue('');
-    expect(readConfig().apiKey).toBe('sk-backup');
+    expect(readConfig().apiKey || '').toBe('');
   });
 
-  it('重点取证：导入备份写盘 config/theme，但 App 运行时设置不刷新 → 重开设置旧值、批量并发旧值、AI 请求仍用旧 model/Key', async () => {
+  it('导入备份 → 运行时设置与主题即时刷新（BUG-25），但本机 API Key 不被备份覆盖（BUG-26）', async () => {
     seedConfig({ apiKey: 'sk-runtime-old', aiModel: 'deepseek-chat', concurrency: 3 });
     const { user, fetchMock } = setupApp();
     await waitForWorkbench();
@@ -277,45 +277,45 @@ describe('B. 备份导入', () => {
       })
     );
 
-    // 备份 config/theme 已写盘
-    expect(readConfig()).toMatchObject({ apiKey: 'sk-backup-new', aiModel: 'deepseek-reasoner', concurrency: 2 });
+    // 白名单配置与主题已写盘；API Key 保持本机原值
+    expect(readConfig()).toMatchObject({ apiKey: 'sk-runtime-old', aiModel: 'deepseek-reasoner', concurrency: 2 });
     expect(readTheme()).toBe('dark');
-    // 但主题 UI 未刷新（onDataRestored 只重载 annotations）
-    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    // 主题 UI 已即时刷新（BUG-25）
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
 
-    // 重开设置：仍显示导入前的运行时旧值
+    // 重开设置：运行时配置同步为备份里的模型/并发 + 原有 Key
     await closeSettings(user);
     await openSettings(user);
     const dialog = settingsDialog();
     expect(within(dialog).getByLabelText(KEY_LABEL)).toHaveValue('sk-runtime-old');
-    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-chat');
-    expect(within(dialog).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('3');
+    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-reasoner');
+    expect(within(dialog).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('2');
 
-    // 危害放大：用户在旧表单上点「保存设置」，旧的运行时值会写回，覆盖刚导入的备份 config
+    // 再次保存不会把旧模型写回
     await user.click(within(dialog).getByRole('button', { name: '保存设置' }));
     await waitFor(() => expect(saveStatus()).toHaveTextContent('设置已保存'));
-    expect(readConfig()).toMatchObject({ apiKey: 'sk-runtime-old', aiModel: 'deepseek-chat', concurrency: 3 });
+    expect(readConfig()).toMatchObject({ apiKey: 'sk-runtime-old', aiModel: 'deepseek-reasoner', concurrency: 2 });
     await closeSettings(user);
 
-    // 批量分析默认并发仍是运行时旧值 3（而非备份里的 2）
+    // 批量分析默认并发取自刷新后的设置
     await user.click(actionButton('批量分析'));
     await screen.findByRole('heading', { name: '批量 AI 分析' });
-    expect(screen.getByRole('combobox')).toHaveValue('3');
+    expect(screen.getByRole('combobox')).toHaveValue('2');
     await user.click(screen.getAllByRole('button', { name: '关闭' })[0]);
 
-    // 单条 AI 分析仍使用旧 Key/model（备份 config 未生效）
+    // 单条 AI 分析使用本机 Key + 备份中的模型
     await user.click(actionButton('AI 分析'));
     expect(await screen.findByRole('heading', { name: '已得到 AI 建议' })).toBeInTheDocument();
     const deepSeekCall = getDeepSeekCalls(fetchMock)[0];
     expect(deepSeekCall[1].headers.Authorization).toBe('Bearer sk-runtime-old');
-    expect(JSON.parse(deepSeekCall[1].body).model).toBe('deepseek-chat');
+    expect(JSON.parse(deepSeekCall[1].body).model).toBe('deepseek-reasoner');
   });
 });
 
 // -------------------- C. 备份导出安全取证 --------------------
 
-describe('C. 备份导出安全取证', () => {
-  it('导出标注备份 → 备份 JSON 中 config.apiKey 为明文（安全风险取证），且 annotations 一并落盘', async () => {
+describe('C. 备份导出安全（BUG-26 修复）', () => {
+  it('导出标注备份 → 备份 JSON 不含 API Key，仅含标注/主题/白名单配置', async () => {
     seedConfig({ apiKey: 'sk-plain-secret', aiModel: 'deepseek-chat', concurrency: 3 });
     saveAnnotations({ '001': makeAnnotation({ labels: ['accurate'], score: 5, comment: '已审核' }) });
 
@@ -334,14 +334,15 @@ describe('C. 备份导出安全取证', () => {
     expect(capturedBlob).not.toBeNull();
 
     const raw = await capturedBlob.text();
-    // 安全取证：明文 API Key 出现在可下载的备份文件中
-    expect(raw).toContain('sk-plain-secret');
+    // 安全：明文 API Key 不会出现在备份文件中
+    expect(raw).not.toContain('sk-plain-secret');
 
     const backup = JSON.parse(raw);
-    expect(backup.config.apiKey).toBe('sk-plain-secret');
+    expect(backup.config.apiKey).toBeUndefined();
     expect(backup.annotations['001'].labels).toEqual(['accurate']);
     expect(backup).toHaveProperty('theme');
     expect(backup).toHaveProperty('exportedAt');
+    expect(typeof backup.note).toBe('string');
   });
 
   it('导出备份读取已落盘的 config：设置页未保存的 Key 输入不会进入备份文件', async () => {
@@ -366,9 +367,10 @@ describe('C. 备份导出安全取证', () => {
     await user.click(within(dialog).getByRole('button', { name: '导出标注备份' }));
     await within(dialog).findByText('标注备份已导出');
 
-    const backup = JSON.parse(await capturedBlob.text());
-    expect(backup.config.apiKey).toBe('sk-saved-only');
-    expect(await capturedBlob.text()).not.toContain('sk-unsaved-draft');
+    const raw = await capturedBlob.text();
+    expect(JSON.parse(raw).config.apiKey).toBeUndefined();
+    expect(raw).not.toContain('sk-unsaved-draft');
+    expect(raw).not.toContain('sk-saved-only');
   });
 });
 

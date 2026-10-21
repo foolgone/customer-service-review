@@ -11,7 +11,7 @@ import { DEFAULT_ANNOTATION, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SH
 import { exportConversationsToCsv } from './lib/csv';
 import { analyzeWithDeepSeek } from './lib/deepseek';
 import { loadSettings, saveSettings } from './lib/settings';
-import { addImportHistory, loadAnnotations, normalizeAnnotation, saveAnnotations } from './lib/storage';
+import { addImportHistory, loadAnnotations, normalizeAnnotation, readStoredTheme, saveAnnotations } from './lib/storage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
 
@@ -64,7 +64,7 @@ function getLoadErrorMessage(loadError) {
 }
 
 export default function App() {
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, setTheme, toggleTheme } = useTheme();
   const [conversations, setConversations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [annotations, setAnnotations] = useState({});
@@ -386,11 +386,20 @@ export default function App() {
     setSaveState('设置已保存');
   };
 
-  // 设置页恢复/清空数据后重新加载标注
+  // 设置页恢复/清空数据后重新加载：标注 + 运行时配置 + 主题（BUG-25）
   const handleDataRestored = () => {
     const stored = loadAnnotations();
     setAnnotations(stored);
     annotationsRef.current = stored;
+
+    const restoredSettings = loadSettings();
+    setApiKey(restoredSettings.apiKey);
+    setAiModel(restoredSettings.model);
+    setBatchConcurrency(restoredSettings.concurrency);
+    setTheme(readStoredTheme());
+
+    // 避免恢复成功提示被随后的自动保存覆盖（BUG-28）
+    aiNoticeRef.current = true;
     setSaveState('本地数据已更新');
   };
 

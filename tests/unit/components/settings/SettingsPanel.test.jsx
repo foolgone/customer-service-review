@@ -105,7 +105,7 @@ describe('SettingsPanel 数据管理', () => {
 
     await waitFor(() => expect(props.onDataRestored).toHaveBeenCalledTimes(1));
     expect(getAnnotations()['009'].comment).toBe('旧备份');
-    expect(await screen.findByText('备份已恢复')).toBeInTheDocument();
+    expect(await screen.findByText(/备份已恢复/)).toBeInTheDocument();
   });
 
   it('导入非法 JSON → 提示恢复失败且不改数据', async () => {

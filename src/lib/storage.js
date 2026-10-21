@@ -314,39 +314,80 @@ export function clearImportHistory() {
 
 // ==================== 工具函数 ====================
 
+// 备份中允许携带的配置字段（API Key 属于敏感信息，不导出、也不从备份覆盖）
+const BACKUP_CONFIG_FIELDS = ['aiModel', 'temperature', 'maxTokens', 'autoSave', 'concurrency'];
+
+function pickBackupConfig(config = {}) {
+  const picked = {};
+
+  BACKUP_CONFIG_FIELDS.forEach((field) => {
+    if (config[field] !== undefined) {
+      picked[field] = config[field];
+    }
+  });
+
+  return picked;
+}
+
 /**
  * 导出所有数据（用于备份）
+ * 注意：不会导出 API Key（BUG-26），避免备份文件泄露凭证
  * @returns {Object} 所有数据
  */
 export function exportAllData() {
   return {
     annotations: getAnnotations(),
     theme: getTheme(),
-    config: getConfig(),
+    config: pickBackupConfig(getConfig()),
     importHistory: getImportHistory(),
-    exportedAt: new Date().toISOString()
+    exportedAt: new Date().toISOString(),
+    note: 'API Key 不包含在备份中，恢复后需在设置中重新填写'
   };
 }
 
 /**
  * 导入所有数据（用于恢复）
+ * - 只接受非空对象；字段做白名单校验（BUG-26）
+ * - 备份中的配置不会覆盖本机已有的 API Key
  * @param {Object} data - 数据对象
- * @param {boolean} overwrite - 是否覆盖
+ * @param {boolean} overwrite - 是否覆盖标注
+ * @returns {Object} { restored: boolean, fields: string[], reason: 'ok'|'invalid'|'empty' }
  */
 export function importAllData(data, overwrite = false) {
-  if (data.annotations) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { restored: false, fields: [], reason: 'invalid' };
+  }
+
+  const fields = [];
+
+  if (data.annotations && typeof data.annotations === 'object' && !Array.isArray(data.annotations)) {
     importAnnotations(data.annotations, overwrite);
+    fields.push('标注');
   }
-  if (data.theme) {
+
+  if (typeof data.theme === 'string' && ['light', 'dark', 'system'].includes(data.theme)) {
     saveTheme(data.theme);
+    fields.push('主题');
   }
-  if (data.config) {
+
+  const config =
+    data.config && typeof data.config === 'object' && !Array.isArray(data.config) ? pickBackupConfig(data.config) : null;
+
+  if (config && Object.keys(config).length) {
     if (overwrite) {
-      saveConfig(data.config);
+      // 合并写入并保留本机 API Key，避免备份把 Key 清空或替换
+      saveConfig({ ...getConfig(), ...config });
     } else {
-      updateConfig(data.config);
+      updateConfig(config);
     }
+    fields.push('配置');
   }
+
+  if (!fields.length) {
+    return { restored: false, fields: [], reason: 'empty' };
+  }
+
+  return { restored: true, fields, reason: 'ok' };
 }
 
 /**
