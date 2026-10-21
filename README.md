@@ -34,6 +34,34 @@ npm run dev
 npm run build
 ```
 
+### 运行测试
+
+项目使用 **Vitest + React Testing Library**（jsdom 环境），覆盖数据层、Hooks、UI 组件与 App 用户流程。
+
+```bash
+npm test                 # 全量测试
+npm run test:unit        # 仅单元测试（数据层 / Hooks / 组件）
+npm run test:integration # 仅 App 集成测试
+npm run test:watch       # 监听模式
+npm run test:coverage    # 全量测试 + 覆盖率报告（coverage/index.html）
+```
+
+测试文件的组织方式：
+
+> 当前状态：**30 个测试文件 / 501 条用例全部通过**，行覆盖率 **98.72%**、分支覆盖率 **95.98%**（2026-10-21，13 项缺陷修复后复测）。
+> 详细用例清单见 `docx/测试用例文档.md`，执行结果见 `docx/测试报告.md`。
+
+```
+tests/
+├── setup.js                    # jsdom 环境补齐 + 全局清理
+├── helpers/file.js             # 测试数据工厂（JSON/CSV/Excel 文件、对话、标注）
+├── unit/
+│   ├── lib/                    # 核心库与解析器单元测试
+│   ├── hooks/                  # Hooks 单元测试
+│   └── components/             # UI 组件测试
+└── integration/                # App 端到端用户流程测试
+```
+
 ## ⚙️ 配置
 
 ### DeepSeek API 配置
@@ -129,7 +157,16 @@ customer-service-review/
 │   ├── 需求分析报告.md
 │   ├── PRD-产品需求文档.md
 │   ├── 概要设计说明书.md
+│   ├── 测试计划.md
+│   ├── 测试用例文档.md
+│   ├── 测试报告.md
 │   └── 开发启动计划.md
+├── tests/                              # 自动化测试
+│   ├── setup.js                        # Vitest 全局初始化与 jsdom polyfill
+│   ├── helpers/file.js                 # 测试数据工厂
+│   ├── unit/                           # 单元测试（lib / hooks / components）
+│   └── integration/                    # App 集成测试
+├── vitest.config.js                    # Vitest 配置（jsdom + 覆盖率）
 ├── .env.example                        # 环境变量示例
 ├── package.json                        # 项目依赖
 ├── vite.config.js                      # Vite 配置
@@ -163,6 +200,8 @@ customer-service-review/
 - [x] LocalStorage 封装（storage.js）
 - [x] 数据验证模块（validator.js）
 - [x] JSON/CSV/Excel 解析器
+- [x] 测试工程搭建（Vitest + jsdom + React Testing Library）
+- [x] 数据层 / Hooks / UI 组件 / App 集成测试用例
 
 ### 🚧 进行中
 - [ ] 文件上传组件
