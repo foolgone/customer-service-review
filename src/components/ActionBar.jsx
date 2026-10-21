@@ -5,6 +5,7 @@ export default function ActionBar({
   onExport,
   onAnalyze,
   onImport,
+  onExportReport,
   onBatchAnalyze,
   isBatchAnalyzing = false,
   canPrev,
@@ -32,6 +33,13 @@ export default function ActionBar({
         </button>
         <button type="button" onClick={onExport} className="primary-button bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
           导出 CSV
+        </button>
+        <button
+          type="button"
+          onClick={onExportReport}
+          className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+        >
+          导出报告
         </button>
         <button type="button" onClick={onAnalyze} disabled={isAnalyzing || !hasApiKey} className="primary-button border border-slate-200 bg-white text-slate-800 hover:border-cyan-300 hover:bg-cyan-500/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100 dark:hover:border-cyan-700">
           {isAnalyzing ? '分析中...' : 'AI 分析'}

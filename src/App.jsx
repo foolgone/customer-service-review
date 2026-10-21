@@ -16,6 +16,8 @@ import { useTheme } from './hooks/useTheme';
 
 // 导入向导按需加载：xlsx / papaparse 体积较大，不打开导入时不影响首屏
 const ImportWizard = lazy(() => import('./components/import/ImportWizard'));
+// 导出面板按需加载：html2canvas / jspdf / xlsx 体积较大，只在导出时加载
+const ExportReportPanel = lazy(() => import('./components/export/ExportReportPanel'));
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -81,6 +83,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState(getApiKey);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
@@ -652,6 +655,7 @@ export default function App() {
             onExport={handleExport}
             onAnalyze={handleAnalyze}
             onImport={() => setIsImportOpen(true)}
+            onExportReport={() => setIsExportOpen(true)}
             onBatchAnalyze={() => setIsBatchOpen(true)}
             canPrev={currentIndex > 0}
             canNext={currentIndex < conversations.length - 1}
@@ -687,8 +691,20 @@ export default function App() {
           />
         ) : null}
 
+        {isExportOpen ? (
+          <Suspense fallback={null}>
+            <ExportReportPanel
+              open
+              conversations={conversations}
+              annotations={annotations}
+              analytics={analytics}
+              onClose={() => setIsExportOpen(false)}
+            />
+          </Suspense>
+        ) : null}
+
         <footer className="pb-2 text-center text-xs text-slate-500 dark:text-slate-400">
-          本地标注会自动保存到浏览器 localStorage · 支持 JSON/CSV/Excel 导入 · 支持导出 CSV · 共 {LABELS.length} 个标签
+          本地标注会自动保存到浏览器 localStorage · 支持 JSON/CSV/Excel 导入 · 支持导出 CSV / Excel / PDF 报告 · 共 {LABELS.length} 个标签
         </footer>
       </div>
     </main>
