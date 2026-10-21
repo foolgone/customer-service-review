@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BUG-25~28 设置模块 App 级集成回归测试
  *
  * 覆盖：
@@ -122,7 +122,7 @@ function makeBackup({ annotations, config, theme } = {}) {
 // -------------------- BUG-25 恢复后运行时即时刷新 --------------------
 
 describe('BUG-25 备份恢复后运行时配置与主题即时刷新', () => {
-  it('导入备份 → config 合并保留本机 Key、主题即时 dark、面板草稿不被重置；重开设置回填新配置、批量默认并发=2', async () => {
+  it('导入备份 → config 合并保留本机 Key、主题即时 dark、面板草稿同步为恢复结果；重开设置回填新配置、批量默认并发=2', async () => {
     seedConfig({ apiKey: 'sk-local', aiModel: 'deepseek-chat', concurrency: 3 });
     const { user } = setupApp();
     await waitForWorkbench();
@@ -151,9 +151,10 @@ describe('BUG-25 备份恢复后运行时配置与主题即时刷新', () => {
     // 主题即时生效并落盘
     await waitFor(() => expect(document.documentElement.classList.contains('dark')).toBe(true));
     expect(readTheme()).toBe('dark');
-    // BUG-30 回归：恢复期间面板草稿与提示不被父级变化重置
+    // BUG-31 回归：面板内恢复成功后草稿同步为恢复结果，避免随后保存时用旧草稿覆盖
     expect(within(dialog).getByLabelText(KEY_LABEL)).toHaveValue('sk-local');
-    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-chat');
+    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-reasoner');
+    expect(within(dialog).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('2');
     expect(within(dialog).getByText('备份已恢复（标注、主题、配置）')).toBeInTheDocument();
 
     // 关闭重开：回填恢复后的运行时配置
@@ -197,7 +198,7 @@ describe('BUG-25 备份恢复后运行时配置与主题即时刷新', () => {
     expect(JSON.parse(options.body).model).toBe('deepseek-reasoner');
   });
 
-  it('残余风险取证（当前行为）：导入备份后不重开设置直接点「保存设置」→ 打开时的旧草稿覆盖刚恢复的配置', async () => {
+  it('BUG-31：导入备份后面板草稿同步为恢复结果，直接「保存设置」不会用旧值覆盖', async () => {
     seedConfig({ apiKey: 'sk-local', aiModel: 'deepseek-chat', concurrency: 3 });
     const { user } = setupApp();
     await waitForWorkbench();
@@ -206,20 +207,20 @@ describe('BUG-25 备份恢复后运行时配置与主题即时刷新', () => {
 
     await uploadBackup(user, dialog, makeBackup({ config: { aiModel: 'deepseek-reasoner', concurrency: 2 } }));
     expect(readConfig()).toMatchObject({ aiModel: 'deepseek-reasoner', concurrency: 2 });
-    // BUG-30 行为：面板草稿保持打开时的旧值（不因父级恢复而重置）
-    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-chat');
-    expect(within(dialog).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('3');
 
-    // 用户不重开设置直接保存 → 旧草稿覆盖刚恢复的配置（疑似残余缺陷，按当前行为取证）
+    // 恢复成功后表单同步为恢复结果（BUG-31 修复）
+    expect(within(dialog).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-reasoner');
+    expect(within(dialog).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('2');
+
+    // 直接保存仍保持恢复后的配置，不会被旧草稿覆盖
     await user.click(within(dialog).getByRole('button', { name: '保存设置' }));
     await waitFor(() => expect(saveStatus()).toHaveTextContent('设置已保存'));
-    expect(readConfig()).toMatchObject({ apiKey: 'sk-local', aiModel: 'deepseek-chat', concurrency: 3 });
+    expect(readConfig()).toMatchObject({ apiKey: 'sk-local', aiModel: 'deepseek-reasoner', concurrency: 2 });
 
-    // 运行时也随之回退为旧草稿值
     await closeSettings(user);
     await openSettings(user);
-    expect(within(settingsDialog()).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-chat');
-    expect(within(settingsDialog()).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('3');
+    expect(within(settingsDialog()).getByLabelText(MODEL_LABEL)).toHaveValue('deepseek-reasoner');
+    expect(within(settingsDialog()).getByLabelText(CONCURRENCY_LABEL)).toHaveValue('2');
   });
 });
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { LABELS } from '../../lib/constants';
 import {
@@ -51,17 +51,43 @@ function StatusBadge({ reviewed, hasAi }) {
 export default function DataManagerPanel({ open, conversations = [], annotations = {}, onClose, onJump, onExportFiltered }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
+  const [message, setMessage] = useState({ type: '', text: '' });
   const dialogRef = useDialogA11y({ open, onClose });
 
+  // BUG-34：大数据集下输入保持流畅，过滤跟随延迟值
+  const deferredKeyword = useDeferredValue(filters.keyword);
+  const deferredFilters = useMemo(
+    () => normalizeFilters({ ...filters, keyword: deferredKeyword }),
+    [filters, deferredKeyword]
+  );
+
   const stats = useMemo(() => summarizeConversations(conversations, annotations), [conversations, annotations]);
-  const filtered = useMemo(() => filterConversations(conversations, annotations, filters), [conversations, annotations, filters]);
+  const filtered = useMemo(
+    () => filterConversations(conversations, annotations, deferredFilters),
+    [conversations, annotations, deferredFilters]
+  );
   const paged = useMemo(() => paginate(filtered, page, PAGE_SIZE), [filtered, page]);
-  const active = hasActiveFilters(filters);
+  // BUG-33：输入框非空（哪怕只有空格）也提供「清空筛选」入口
+  const active = hasActiveFilters(filters) || filters.keyword.length > 0;
   const importHistory = useMemo(() => getImportHistory().slice(0, IMPORT_HISTORY_LIMIT), [open]);
 
   if (!open) {
     return null;
   }
+
+  const handleExportFiltered = () => {
+    if (!filtered.length) {
+      return;
+    }
+
+    try {
+      onExportFiltered?.(filtered);
+      // BUG-32：面板内即时反馈，不再只写工作台状态
+      setMessage({ type: 'success', text: `已导出筛选结果 ${filtered.length} 条` });
+    } catch (error) {
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : '导出筛选结果失败' });
+    }
+  };
 
   const updateFilters = (patch) => {
     setFilters((previous) => normalizeFilters({ ...previous, ...patch }));
@@ -220,8 +246,13 @@ export default function DataManagerPanel({ open, conversations = [], annotations
               </p>
             </div>
 
-            <div className="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
+            <div
+              className="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800"
+              tabIndex={0}
+              role="region"
+              aria-label="对话筛选结果表格（可横向滚动）"
+            >
+              <table aria-label="对话筛选结果" className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
                 <thead className="bg-slate-50 dark:bg-slate-950/60">
                   <tr>
                     <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">ID</th>
@@ -326,11 +357,21 @@ export default function DataManagerPanel({ open, conversations = [], annotations
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-          <span className="text-xs text-slate-500 dark:text-slate-400">导出内容为当前筛选结果（{filtered.length} 条）</span>
+          <span
+            className={`min-h-[1rem] text-xs ${
+              message.type === 'error'
+                ? 'text-rose-600 dark:text-rose-300'
+                : message.type === 'success'
+                  ? 'text-emerald-600 dark:text-emerald-300'
+                  : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            {message.text || `导出内容为当前筛选结果（${filtered.length} 条）`}
+          </span>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onExportFiltered?.(filtered)}
+              onClick={handleExportFiltered}
               disabled={!filtered.length}
               className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
             >

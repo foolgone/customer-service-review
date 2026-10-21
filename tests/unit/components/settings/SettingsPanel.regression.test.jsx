@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SettingsPanel from '../../../../src/components/settings/SettingsPanel.jsx';
+import { saveConfig } from '../../../../src/lib/storage.js';
 
 const BASE_SETTINGS = { apiKey: 'sk-saved', model: 'deepseek-chat', concurrency: 3 };
 
@@ -170,9 +171,10 @@ describe('SettingsPanel BUG-30 · 父级设置同步边界', () => {
     expect(screen.getByText('API Key 已配置')).toBeInTheDocument();
   });
 
-  it('残余风险取证：打开期间导入含配置的备份后直接保存 → 用打开时的旧值覆盖刚恢复的配置（疑似缺陷，非本次修复范围）', async () => {
+  it('BUG-31 回归：打开期间导入含配置的备份 → 表单同步为恢复结果，保存不会用旧值覆盖', async () => {
     const user = userEvent.setup();
-    const { props, rerenderPanel, container } = renderPanel({
+    saveConfig({ apiKey: 'sk-local', aiModel: 'deepseek-chat', concurrency: 3 });
+    const { props, container } = renderPanel({
       settings: { apiKey: 'sk-local', model: 'deepseek-chat', concurrency: 3 }
     });
 
@@ -184,16 +186,14 @@ describe('SettingsPanel BUG-30 · 父级设置同步边界', () => {
     );
     expect(await screen.findByText(/备份已恢复（配置）/)).toBeInTheDocument();
 
-    // App 的 handleDataRestored（BUG-25）会重载 settings 并把新值回传面板
-    rerenderPanel({ settings: { apiKey: 'sk-local', model: 'deepseek-reasoner', concurrency: 5 } });
+    // 恢复成功后表单立即同步恢复结果（BUG-31 修复）
+    expect(screen.getByLabelText('模型')).toHaveValue('deepseek-reasoner');
+    expect(screen.getByLabelText('批量分析默认并发')).toHaveValue('5');
+    expect(screen.getByLabelText('DeepSeek API Key')).toHaveValue('sk-local');
 
-    // BUG-30 的取舍：打开期间不同步 draft → 表单仍停留在打开时的旧值
-    expect(screen.getByLabelText('模型')).toHaveValue('deepseek-chat');
-    expect(screen.getByLabelText('批量分析默认并发')).toHaveValue('3');
-
-    // 此时点「保存设置」→ 用旧表单值覆盖刚恢复的配置
+    // 此时「保存设置」提交的是恢复后的值，而不是打开时的旧草稿
     await user.click(screen.getByRole('button', { name: '保存设置' }));
-    expect(props.onSave).toHaveBeenCalledWith({ apiKey: 'sk-local', model: 'deepseek-chat', concurrency: 3 });
+    expect(props.onSave).toHaveBeenCalledWith({ apiKey: 'sk-local', model: 'deepseek-reasoner', concurrency: 5 });
     expect(await screen.findByText('设置已保存')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataManagerPanel 组件测试
  * 覆盖：概览统计、筛选（关键词/标签/评分/状态）、清空、分页、跳转、导出筛选结果、导入历史、Esc 关闭
  */
@@ -158,7 +158,7 @@ describe('DataManagerPanel 分页与跳转', () => {
 });
 
 describe('DataManagerPanel 导出与导入历史', () => {
-  it('点击导出筛选结果 → onExportFiltered 收到当前筛选结果', async () => {
+  it('点击导出筛选结果 → onExportFiltered 收到当前筛选结果，面板内即时提示（BUG-32 已修复）', async () => {
     const user = userEvent.setup();
     const { props } = renderPanel();
 
@@ -167,6 +167,23 @@ describe('DataManagerPanel 导出与导入历史', () => {
 
     expect(props.onExportFiltered).toHaveBeenCalledTimes(1);
     expect(props.onExportFiltered.mock.calls[0][0].map((item) => item.id)).toEqual(['002']);
+    expect(await screen.findByText('已导出筛选结果 1 条')).toBeInTheDocument();
+  });
+
+  it('纯空白关键词 → 显示「清空筛选」入口（BUG-33 已修复）', async () => {
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.type(screen.getByLabelText('搜索对话'), '   ');
+
+    expect(screen.getByRole('button', { name: '清空筛选' })).toBeInTheDocument();
+  });
+
+  it('结果表格具备可访问性标注（BUG-35 已修复）', () => {
+    renderPanel();
+
+    expect(screen.getByRole('table', { name: '对话筛选结果' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '对话筛选结果表格（可横向滚动）' })).toHaveAttribute('tabindex', '0');
   });
 
   it('有导入历史 → 展示文件名/格式/有效条数；无历史 → 提示暂无', () => {

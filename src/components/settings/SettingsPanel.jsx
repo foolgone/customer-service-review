@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDialogA11y } from '../../hooks/useDialogA11y';
-import { AI_MODEL_OPTIONS, DEFAULT_SETTINGS, normalizeSettings } from '../../lib/settings';
+import { AI_MODEL_OPTIONS, DEFAULT_SETTINGS, loadSettings, normalizeSettings } from '../../lib/settings';
 import {
   clearAnnotations,
   exportAllData,
@@ -101,6 +101,13 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
       }
 
       onDataRestored?.();
+
+      // BUG-31：本面板发起的恢复成功后，用恢复结果重同步表单，避免随后「保存设置」用旧草稿覆盖配置
+      const restoredSettings = loadSettings();
+      setApiKey(restoredSettings.apiKey);
+      setModel(restoredSettings.model);
+      setConcurrency(restoredSettings.concurrency);
+
       setMessage({ type: 'success', text: `备份已恢复（${result.fields.join('、')}）` });
     } catch {
       setMessage({ type: 'error', text: '备份文件不是有效的 JSON，恢复失败' });
