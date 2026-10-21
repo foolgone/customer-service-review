@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from './components/ActionBar';
 import AnalysisPanel from './components/AnalysisPanel';
+import BatchAnalysisPanel from './components/ai/BatchAnalysisPanel';
 import ConversationPanel from './components/ConversationPanel';
 import Dashboard from './components/Dashboard';
 import LabelSelector from './components/LabelSelector';
@@ -79,6 +80,7 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [apiKey, setApiKey] = useState(getApiKey);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
   const reviewStartedAtRef = useRef(Date.now());
@@ -389,6 +391,35 @@ export default function App() {
     setIsImportOpen(false);
   };
 
+  // 批量分析结果：只写入 AI 建议字段，绝不覆盖人工标签/备注/评分
+  const handleApplyBatchResults = (records) => {
+    if (!records?.length) {
+      return;
+    }
+
+    const nowIso = getNowIso();
+
+    setAnnotations((previous) => {
+      const next = { ...previous };
+
+      records.forEach(({ id, labels, reason }) => {
+        const existing = normalizeAnnotation(next[id] || DEFAULT_ANNOTATION);
+        next[id] = normalizeAnnotation({
+          ...existing,
+          aiLabels: labels,
+          aiReason: reason,
+          aiAt: nowIso,
+          startedAt: existing.startedAt || new Date(reviewStartedAtRef.current).toISOString(),
+          updatedAt: nowIso
+        });
+      });
+
+      return next;
+    });
+
+    setSaveState(`批量分析完成：${records.length} 条 AI 建议已保存`);
+  };
+
   const handleRestoreSample = async () => {
     try {
       const response = await fetch('/data/conversations.json');
@@ -618,6 +649,7 @@ export default function App() {
             onExport={handleExport}
             onAnalyze={handleAnalyze}
             onImport={() => setIsImportOpen(true)}
+            onBatchAnalyze={() => setIsBatchOpen(true)}
             canPrev={currentIndex > 0}
             canNext={currentIndex < conversations.length - 1}
             isAnalyzing={isAnalyzing}
@@ -636,6 +668,18 @@ export default function App() {
               onImport={handleImportConversations}
             />
           </Suspense>
+        ) : null}
+
+        {isBatchOpen ? (
+          <BatchAnalysisPanel
+            open
+            conversations={conversations}
+            annotations={annotations}
+            apiKey={apiKey}
+            model={getModel()}
+            onClose={() => setIsBatchOpen(false)}
+            onApplyResults={handleApplyBatchResults}
+          />
         ) : null}
 
         <footer className="pb-2 text-center text-xs text-slate-500 dark:text-slate-400">
