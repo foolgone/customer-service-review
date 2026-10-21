@@ -192,28 +192,22 @@ customer-service-review/
 
 ## 📊 开发进度
 
-### ✅ 已完成
-- [x] 项目初始化
-- [x] 基础架构搭建
-- [x] 工具函数库（utils, constants）
-- [x] LocalStorage 封装（storage.js）
-- [x] 数据验证模块（validator.js）
-- [x] JSON/CSV/Excel 解析器
-- [x] 测试工程搭建（Vitest + jsdom + React Testing Library）
-- [x] 数据层 / Hooks / UI 组件 / App 集成测试用例
-
-### 🚧 进行中
-- [ ] 文件上传组件
-- [ ] 数据导入向导
-- [ ] AI 分析模块
-- [ ] 统计仪表盘
-- [ ] 报告导出功能
+### ✅ 已完成（Phase 1 核心功能）
+- [x] 项目初始化 / 基础架构 / 工具函数库 / LocalStorage 封装 / 数据验证
+- [x] 数据导入（JSON / CSV / Excel 三步向导、字段映射、跳过行提示）
+- [x] 质检标注（标签 / 评分 / 备注 / 自动保存 / 快捷键）
+- [x] AI 分析（DeepSeek 单条 + 批量并发，结果只作建议、不覆盖人工结论）
+- [x] 统计仪表盘 + 数据管理页（筛选 / 搜索 / 分页 / 跳转 / 导出筛选结果）
+- [x] 报告导出（CSV / Excel 多 Sheet / PDF）
+- [x] 设置页（API Key 运行时配置、模型 / 并发、标注备份导入导出）
+- [x] 深色模式、弹窗可访问性（dialog 语义 / 焦点锁定 / Esc 关闭）
+- [x] 测试工程（Vitest + React Testing Library：884 条用例，行覆盖 99.10%）
+- [x] CI 门禁（GitHub Actions：push/PR 自动跑测试 + 覆盖率阈值）
 
 ### 📅 计划中
-- [ ] Excel 报告导出
-- [ ] PDF 报告导出
-- [ ] 批量 AI 分析
-- [ ] 数据筛选和搜索
+- [ ] 部署上线（Vercel / Netlify + 分支保护）
+- [ ] 真实浏览器 E2E（Playwright）
+- [ ] 其他服务商 AI Provider 接入（OpenAI / Claude）
 
 ## 🤝 贡献指南
 
@@ -230,4 +224,4 @@ MIT License
 ---
 
 **当前版本**: v1.0.0 (Phase 1 MVP)  
-**最后更新**: 2024年
+**最后更新**: 2026-10-21
