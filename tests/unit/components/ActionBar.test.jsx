@@ -1,6 +1,7 @@
 /**
  * ActionBar 组件单元测试
  * 覆盖：上一条/下一条禁用态与回调、保存中/分析中/未配置 Key 的按钮状态与文案、
+ *       批量分析按钮的禁用/运行中文案与回调、默认 props 行为、
  *       导出/导入/主题切换回调、themeLabel 透传、快捷键提示区文案。
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -16,6 +17,8 @@ function renderActionBar(overrides = {}) {
     onExport: vi.fn(),
     onAnalyze: vi.fn(),
     onImport: vi.fn(),
+    onBatchAnalyze: vi.fn(),
+    isBatchAnalyzing: false,
     canPrev: true,
     canNext: true,
     isAnalyzing: false,
@@ -92,6 +95,54 @@ describe('ActionBar', () => {
 
     await user.click(analyzeButton);
     expect(props.onAnalyze).toHaveBeenCalledTimes(1);
+  });
+
+  it('hasApiKey=true 且未批量分析：「批量分析」按钮可用，点击触发 onBatchAnalyze', async () => {
+    const props = renderActionBar({ hasApiKey: true, isBatchAnalyzing: false });
+    const user = userEvent.setup();
+
+    const batchButton = screen.getByRole('button', { name: '批量分析' });
+    expect(batchButton).toBeEnabled();
+
+    await user.click(batchButton);
+    expect(props.onBatchAnalyze).toHaveBeenCalledTimes(1);
+  });
+
+  it('hasApiKey=false：「批量分析」按钮禁用', () => {
+    renderActionBar({ hasApiKey: false, isBatchAnalyzing: false });
+
+    expect(screen.getByRole('button', { name: '批量分析' })).toBeDisabled();
+  });
+
+  it('isBatchAnalyzing=true：文案为「批量分析中...」且禁用', () => {
+    renderActionBar({ hasApiKey: true, isBatchAnalyzing: true });
+
+    expect(screen.getByRole('button', { name: '批量分析中...' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: '批量分析' })).not.toBeInTheDocument();
+  });
+
+  it('未传 isBatchAnalyzing → 默认视为未运行，按钮文案为「批量分析」且可用', () => {
+    const props = {
+      onPrev: vi.fn(),
+      onNext: vi.fn(),
+      onSave: vi.fn(),
+      onExport: vi.fn(),
+      onAnalyze: vi.fn(),
+      onImport: vi.fn(),
+      onBatchAnalyze: vi.fn(),
+      canPrev: true,
+      canNext: true,
+      isAnalyzing: false,
+      isSaving: false,
+      hasApiKey: true,
+      onToggleTheme: vi.fn(),
+      themeLabel: '切换深色模式'
+    };
+
+    render(<ActionBar {...props} />);
+
+    expect(screen.getByRole('button', { name: '批量分析' })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: '批量分析中...' })).not.toBeInTheDocument();
   });
 
   it('导出 CSV、导入数据、切换主题按钮点击分别触发各自回调', async () => {

@@ -45,6 +45,9 @@ const FILE_META = [
   { match: 'tests/unit/lib/parsers/csv.test.js', module: '数据导入-CSV 解析', source: 'src/lib/parsers/csv.js', prefix: 'CSVP', priority: 'P0' },
   { match: 'tests/unit/lib/parsers/excel.test.js', module: '数据导入-Excel 解析', source: 'src/lib/parsers/excel.js', prefix: 'XLS', priority: 'P1' },
   { match: 'tests/unit/lib/parsers/index.test.js', module: '数据导入-解析调度', source: 'src/lib/parsers/index.js', prefix: 'PARSER', priority: 'P1' },
+  { match: 'tests/unit/lib/ai/batch.test.js', module: 'AI-批量执行器', source: 'src/lib/ai/batch.js', prefix: 'AI-BATCH', priority: 'P0' },
+  { match: 'tests/unit/lib/ai/providers.test.js', module: 'AI-Provider 抽象', source: 'src/lib/ai/providers.js', prefix: 'AI-PROV', priority: 'P1' },
+  { match: 'tests/unit/lib/ai/edge-cases.test.js', module: 'AI-边界与统一入口', source: 'src/lib/ai/*.js', prefix: 'AI-EDGE', priority: 'P1' },
   { match: 'tests/unit/hooks/useTheme.test.jsx', module: 'Hooks-主题管理', source: 'src/hooks/useTheme.js', prefix: 'THEME', priority: 'P1' },
   { match: 'tests/unit/hooks/useKeyboardShortcuts.test.jsx', module: 'Hooks-全局快捷键', source: 'src/hooks/useKeyboardShortcuts.js', prefix: 'KEY', priority: 'P0' },
   { match: 'tests/unit/components/ChatBubble.test.jsx', module: '组件-消息气泡', source: 'src/components/ChatBubble.jsx', prefix: 'UI-BUBBLE', priority: 'P1' },
@@ -57,6 +60,8 @@ const FILE_META = [
   { match: 'tests/unit/components/import/FileUploader.test.jsx', module: '组件-导入-文件上传', source: 'src/components/import/FileUploader.jsx', prefix: 'UI-UP', priority: 'P1' },
   { match: 'tests/unit/components/import/DataPreview.test.jsx', module: '组件-导入-数据预览', source: 'src/components/import/DataPreview.jsx', prefix: 'UI-PREV', priority: 'P1' },
   { match: 'tests/unit/components/import/ImportWizard.test.jsx', module: '组件-导入-三步向导', source: 'src/components/import/ImportWizard.jsx', prefix: 'UI-IMPORT', priority: 'P0' },
+  { match: 'tests/unit/components/ai/BatchAnalysisPanel.test.jsx', module: '组件-批量分析面板', source: 'src/components/ai/BatchAnalysisPanel.jsx', prefix: 'UI-BATCH', priority: 'P0' },
+  { match: 'tests/integration/batch-analysis.test.jsx', module: '集成-批量分析流程', source: 'src/App.jsx', prefix: 'APP-BATCH', priority: 'P0' },
   { match: 'tests/integration/', module: '集成-App 用户流程', source: 'src/App.jsx', prefix: 'APP', priority: 'P0' },
   { match: 'tests/unit/env.test.js', module: '测试基础设施', source: 'vitest.config.js / tests/setup.js', prefix: 'ENV', priority: 'P2' }
 ];
@@ -140,6 +145,7 @@ caseLines.push('');
 caseLines.push('| 层级 | 模块数 | 用例数 |');
 caseLines.push('|------|--------|--------|');
 const layerOf = (moduleName) => {
+  if (moduleName.startsWith('AI-')) return '单元测试 / AI 能力';
   if (moduleName.startsWith('数据导入')) return '单元测试 / 数据导入层';
   if (moduleName.startsWith('核心库')) return '单元测试 / 核心库';
   if (moduleName.startsWith('Hooks')) return '单元测试 / Hooks';
@@ -286,7 +292,7 @@ if (coverage && coverage.total) {
 }
 reportLines.push('');
 
-reportLines.push('## 5. 缺陷修复验证');
+reportLines.push('## 5. 缺陷与待处理项');
 reportLines.push('');
 if (issues.length) {
   reportLines.push('| 编号 | 严重程度 | 状态 | 标题 | 说明 |');
@@ -309,11 +315,14 @@ reportLines.push('## 6. 结论与建议');
 reportLines.push('');
 reportLines.push(`1. 数据层、Hooks、UI 组件与 App 主流程已建立自动化回归保护，用例总数 **${total}** 条，通过率 **${passRate}%**。`);
 const fixedCount = issues.filter((issue) => issue.status === '已修复').length;
+const openCount = issues.length - fixedCount;
 const regressionCount = allCases.filter((item) => /BUG-\d+ 已修复/.test(item.fullTitle)).length;
 if (fixedCount) {
-  reportLines.push(`2. 测试报告提出的 **${issues.length}** 项疑似缺陷中 **${fixedCount}** 项已修复，并补充了 **${regressionCount}** 条带 BUG 编号的回归用例（另有断言更新覆盖其余修复项），防止同类问题再次出现。`);
+  reportLines.push(`2. 测试报告累计提出的 **${issues.length}** 项问题中，**${fixedCount}** 项已修复（含 **${regressionCount}** 条带 BUG 编号的回归用例，另有断言更新覆盖其余修复项）；**${openCount}** 项为本阶段新增的待处理/待确认观察项。`);
+} else if (openCount) {
+  reportLines.push(`2. 本轮记录 **${openCount}** 项待处理/待确认观察项，详见第 5 节。`);
 }
-reportLines.push(`${fixedCount ? 3 : 2}. 建议将 \`npm test\` 接入 CI（GitHub Actions），在合并前阻断回归。`);
+reportLines.push(`${fixedCount ? 3 : 2}. CI 门禁已接入（\`.github/workflows/test.yml\`，push/PR 自动执行并校验覆盖率阈值）；建议在仓库分支保护中把 Test 检查设为合并必需项。`);
 reportLines.push(`${fixedCount ? 4 : 3}. 后续优先补充：PDF/Excel 报告导出（待实现）、真实浏览器 E2E（Playwright）、DeepSeek 接口契约测试。`);
 reportLines.push('');
 
