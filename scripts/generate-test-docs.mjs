@@ -55,6 +55,8 @@ const FILE_META = [
   { match: 'tests/unit/lib/settings.test.js', module: '设置-归一化与持久化', source: 'src/lib/settings.js', prefix: 'SETTINGS', priority: 'P1' },
   { match: 'tests/unit/lib/storage-backup.test.js', module: '设置-备份数据契约', source: 'src/lib/storage.js', prefix: 'BACKUP', priority: 'P1' },
   { match: 'tests/unit/lib/labels.test.js', module: '核心库-标签工具', source: 'src/lib/labels.js', prefix: 'LABELS', priority: 'P1' },
+  { match: 'tests/unit/lib/filters.test.js', module: '数据管理-筛选逻辑', source: 'src/lib/filters.js', prefix: 'FILTER', priority: 'P1' },
+  { match: 'tests/unit/lib/filters-edge.test.js', module: '数据管理-筛选逻辑', source: 'src/lib/filters.js', prefix: 'FILTER', priority: 'P1' },
   { match: 'tests/unit/hooks/useTheme.test.jsx', module: 'Hooks-主题管理', source: 'src/hooks/useTheme.js', prefix: 'THEME', priority: 'P1' },
   { match: 'tests/unit/hooks/useDialogA11y.test.jsx', module: 'Hooks-弹窗可访问性', source: 'src/hooks/useDialogA11y.js', prefix: 'A11Y', priority: 'P1' },
   { match: 'tests/unit/hooks/useKeyboardShortcuts.enabled.test.jsx', module: 'Hooks-全局快捷键', source: 'src/hooks/useKeyboardShortcuts.js', prefix: 'KEY', priority: 'P1' },
@@ -74,11 +76,15 @@ const FILE_META = [
   { match: 'tests/unit/components/settings/SettingsPanel.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P0' },
   { match: 'tests/unit/components/settings/SettingsPanel.extra.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P1' },
   { match: 'tests/unit/components/settings/SettingsPanel.regression.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P0' },
+  { match: 'tests/unit/components/data/DataManagerPanel.test.jsx', module: '组件-数据管理面板', source: 'src/components/data/DataManagerPanel.jsx', prefix: 'UI-DATA', priority: 'P1' },
+  { match: 'tests/unit/components/data/DataManagerPanel.extra.test.jsx', module: '组件-数据管理面板', source: 'src/components/data/DataManagerPanel.jsx', prefix: 'UI-DATA', priority: 'P1' },
   { match: 'tests/integration/batch-analysis.test.jsx', module: '集成-批量分析流程', source: 'src/App.jsx', prefix: 'APP-BATCH', priority: 'P0' },
   { match: 'tests/integration/export-report.test.jsx', module: '集成-导出报告流程', source: 'src/App.jsx', prefix: 'APP-EXPORT', priority: 'P0' },
   { match: 'tests/integration/settings.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
   { match: 'tests/integration/settings-admin.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
   { match: 'tests/integration/settings-regression.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
+  { match: 'tests/integration/data-manager.test.jsx', module: '集成-数据管理流程', source: 'src/App.jsx', prefix: 'APP-DATA', priority: 'P0' },
+  { match: 'tests/integration/data-manager-extra.test.jsx', module: '集成-数据管理流程', source: 'src/App.jsx', prefix: 'APP-DATA', priority: 'P0' },
   { match: 'tests/integration/modal-a11y.test.jsx', module: '集成-弹窗可访问性与快捷键隔离', source: 'src/App.jsx', prefix: 'APP-MODAL', priority: 'P0' },
   { match: 'tests/integration/', module: '集成-App 用户流程', source: 'src/App.jsx', prefix: 'APP', priority: 'P0' },
   { match: 'tests/unit/env.test.js', module: '测试基础设施', source: 'vitest.config.js / tests/setup.js', prefix: 'ENV', priority: 'P2' }
@@ -166,6 +172,7 @@ const layerOf = (moduleName) => {
   if (moduleName.startsWith('AI-')) return '单元测试 / AI 能力';
   if (moduleName.startsWith('导出-')) return '单元测试 / 导出层';
   if (moduleName.startsWith('设置-')) return '单元测试 / 设置层';
+  if (moduleName.startsWith('数据管理-')) return '单元测试 / 数据管理层';
   if (moduleName.startsWith('数据导入')) return '单元测试 / 数据导入层';
   if (moduleName.startsWith('核心库')) return '单元测试 / 核心库';
   if (moduleName.startsWith('Hooks')) return '单元测试 / Hooks';
