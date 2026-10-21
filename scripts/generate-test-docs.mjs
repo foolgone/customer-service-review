@@ -48,6 +48,10 @@ const FILE_META = [
   { match: 'tests/unit/lib/ai/batch.test.js', module: 'AI-批量执行器', source: 'src/lib/ai/batch.js', prefix: 'AI-BATCH', priority: 'P0' },
   { match: 'tests/unit/lib/ai/providers.test.js', module: 'AI-Provider 抽象', source: 'src/lib/ai/providers.js', prefix: 'AI-PROV', priority: 'P1' },
   { match: 'tests/unit/lib/ai/edge-cases.test.js', module: 'AI-边界与统一入口', source: 'src/lib/ai/*.js', prefix: 'AI-EDGE', priority: 'P1' },
+  { match: 'tests/unit/lib/exporters/excel.test.js', module: '导出-Excel 多 Sheet', source: 'src/lib/exporters/excel.js', prefix: 'EXP-XLSX', priority: 'P1' },
+  { match: 'tests/unit/lib/exporters/pdf.test.js', module: '导出-PDF 生成', source: 'src/lib/exporters/pdf.js', prefix: 'EXP-PDF', priority: 'P0' },
+  { match: 'tests/unit/lib/exporters/pdf-layout.test.js', module: '导出-PDF 分页布局', source: 'src/lib/exporters/pdf-layout.js', prefix: 'EXP-LAYOUT', priority: 'P1' },
+  { match: 'tests/unit/lib/exporters/edge-cases.test.js', module: '导出-边界与下载契约', source: 'src/lib/exporters/*.js', prefix: 'EXP-EDGE', priority: 'P1' },
   { match: 'tests/unit/hooks/useTheme.test.jsx', module: 'Hooks-主题管理', source: 'src/hooks/useTheme.js', prefix: 'THEME', priority: 'P1' },
   { match: 'tests/unit/hooks/useKeyboardShortcuts.test.jsx', module: 'Hooks-全局快捷键', source: 'src/hooks/useKeyboardShortcuts.js', prefix: 'KEY', priority: 'P0' },
   { match: 'tests/unit/components/ChatBubble.test.jsx', module: '组件-消息气泡', source: 'src/components/ChatBubble.jsx', prefix: 'UI-BUBBLE', priority: 'P1' },
@@ -61,7 +65,9 @@ const FILE_META = [
   { match: 'tests/unit/components/import/DataPreview.test.jsx', module: '组件-导入-数据预览', source: 'src/components/import/DataPreview.jsx', prefix: 'UI-PREV', priority: 'P1' },
   { match: 'tests/unit/components/import/ImportWizard.test.jsx', module: '组件-导入-三步向导', source: 'src/components/import/ImportWizard.jsx', prefix: 'UI-IMPORT', priority: 'P0' },
   { match: 'tests/unit/components/ai/BatchAnalysisPanel.test.jsx', module: '组件-批量分析面板', source: 'src/components/ai/BatchAnalysisPanel.jsx', prefix: 'UI-BATCH', priority: 'P0' },
+  { match: 'tests/unit/components/export/ExportReportPanel.test.jsx', module: '组件-导出报告面板', source: 'src/components/export/ExportReportPanel.jsx', prefix: 'UI-EXPORT', priority: 'P0' },
   { match: 'tests/integration/batch-analysis.test.jsx', module: '集成-批量分析流程', source: 'src/App.jsx', prefix: 'APP-BATCH', priority: 'P0' },
+  { match: 'tests/integration/export-report.test.jsx', module: '集成-导出报告流程', source: 'src/App.jsx', prefix: 'APP-EXPORT', priority: 'P0' },
   { match: 'tests/integration/', module: '集成-App 用户流程', source: 'src/App.jsx', prefix: 'APP', priority: 'P0' },
   { match: 'tests/unit/env.test.js', module: '测试基础设施', source: 'vitest.config.js / tests/setup.js', prefix: 'ENV', priority: 'P2' }
 ];
@@ -146,6 +152,7 @@ caseLines.push('| 层级 | 模块数 | 用例数 |');
 caseLines.push('|------|--------|--------|');
 const layerOf = (moduleName) => {
   if (moduleName.startsWith('AI-')) return '单元测试 / AI 能力';
+  if (moduleName.startsWith('导出-')) return '单元测试 / 导出层';
   if (moduleName.startsWith('数据导入')) return '单元测试 / 数据导入层';
   if (moduleName.startsWith('核心库')) return '单元测试 / 核心库';
   if (moduleName.startsWith('Hooks')) return '单元测试 / Hooks';
@@ -323,7 +330,7 @@ if (fixedCount) {
   reportLines.push(`2. 本轮记录 **${openCount}** 项待处理/待确认观察项，详见第 5 节。`);
 }
 reportLines.push(`${fixedCount ? 3 : 2}. CI 门禁已接入（\`.github/workflows/test.yml\`，push/PR 自动执行并校验覆盖率阈值）；建议在仓库分支保护中把 Test 检查设为合并必需项。`);
-reportLines.push(`${fixedCount ? 4 : 3}. 后续优先补充：PDF/Excel 报告导出（待实现）、真实浏览器 E2E（Playwright）、DeepSeek 接口契约测试。`);
+reportLines.push(`${fixedCount ? 4 : 3}. 后续优先补充：设置页/API Key 管理、真实浏览器 E2E（Playwright）、DeepSeek 接口契约测试；并建议配置分支保护把 Test 设为合并必需检查。`);
 reportLines.push('');
 
 fs.mkdirSync(path.join(root, 'docx'), { recursive: true });

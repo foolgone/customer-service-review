@@ -2,7 +2,8 @@
  * ActionBar 组件单元测试
  * 覆盖：上一条/下一条禁用态与回调、保存中/分析中/未配置 Key 的按钮状态与文案、
  *       批量分析按钮的禁用/运行中文案与回调、默认 props 行为、
- *       导出/导入/主题切换回调、themeLabel 透传、快捷键提示区文案。
+ *       导出/导入/主题切换回调、themeLabel 透传、快捷键提示区文案、
+ *       「导出报告」按钮（阶段 3）的渲染、回调、缺省容错及与「导出 CSV」互不干扰。
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -192,5 +193,48 @@ describe('ActionBar', () => {
     expect(screen.getByText('D 深色模式')).toBeInTheDocument();
     expect(screen.getByText('1-6 标签')).toBeInTheDocument();
     expect(screen.getByText('Alt+1-5 评分')).toBeInTheDocument();
+  });
+
+  describe('导出报告按钮（阶段 3 导出模块）', () => {
+    it('渲染「导出报告」按钮且默认可用，与「导出 CSV」同时存在', () => {
+      renderActionBar();
+
+      const exportReportButton = screen.getByRole('button', { name: '导出报告' });
+      expect(exportReportButton).toBeInTheDocument();
+      expect(exportReportButton).toBeEnabled();
+      expect(screen.getByRole('button', { name: '导出 CSV' })).toBeInTheDocument();
+    });
+
+    it('点击「导出报告」→ 触发 onExportReport 一次，且不误触 onExport', async () => {
+      const props = renderActionBar({ onExportReport: vi.fn() });
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole('button', { name: '导出报告' }));
+
+      expect(props.onExportReport).toHaveBeenCalledTimes(1);
+      expect(props.onExport).not.toHaveBeenCalled();
+    });
+
+    it('未传 onExportReport → 按钮仍渲染，点击不抛错且不触发其他回调', async () => {
+      const props = renderActionBar({ onExportReport: undefined });
+      const user = userEvent.setup();
+
+      await expect(user.click(screen.getByRole('button', { name: '导出报告' }))).resolves.toBeUndefined();
+
+      expect(screen.getByRole('button', { name: '导出报告' })).toBeInTheDocument();
+      expect(props.onExport).not.toHaveBeenCalled();
+      expect(props.onSave).not.toHaveBeenCalled();
+    });
+
+    it('「导出报告」与「导出 CSV」点击互不影响各自回调', async () => {
+      const props = renderActionBar({ onExportReport: vi.fn() });
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole('button', { name: '导出报告' }));
+      await user.click(screen.getByRole('button', { name: '导出 CSV' }));
+
+      expect(props.onExportReport).toHaveBeenCalledTimes(1);
+      expect(props.onExport).toHaveBeenCalledTimes(1);
+    });
   });
 });
