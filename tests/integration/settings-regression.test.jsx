@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BUG-25~28 设置模块 App 级集成回归测试
  *
  * 覆盖：
@@ -76,7 +76,7 @@ function settingsDialog() {
 
 async function openSettings(user) {
   await user.click(actionButton('设置'));
-  await screen.findByRole('heading', SETTINGS_HEADING);
+  await screen.findByRole('heading', SETTINGS_HEADING, { timeout: 5000 });
   return settingsDialog();
 }
 

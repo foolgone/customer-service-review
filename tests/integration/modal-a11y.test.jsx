@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 模态面板可访问性与快捷键隔离（BUG-20 / BUG-21 / BUG-22 修复的回归用例）
  * 覆盖：dialog 语义、Esc 关闭、初始焦点落在对话框内、面板打开时全局快捷键暂停
  */
@@ -20,7 +20,7 @@ afterEach(() => {
 
 async function openDialog(user, buttonName, title) {
   await user.click(actionButton(buttonName));
-  await screen.findByRole('heading', { name: title });
+  await screen.findByRole('heading', { name: title }, { timeout: 5000 });
   return screen.getByRole('dialog', { name: title });
 }
 

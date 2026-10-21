@@ -21,6 +21,8 @@ const ImportWizard = lazy(() => import('./components/import/ImportWizard'));
 const ExportReportPanel = lazy(() => import('./components/export/ExportReportPanel'));
 // 设置面板按需加载
 const SettingsPanel = lazy(() => import('./components/settings/SettingsPanel'));
+// 数据管理面板按需加载
+const DataManagerPanel = lazy(() => import('./components/data/DataManagerPanel'));
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -82,6 +84,7 @@ export default function App() {
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
@@ -403,6 +406,21 @@ export default function App() {
     setSaveState('本地数据已更新');
   };
 
+  // 数据管理：跳转到指定对话（关闭面板并定位）
+  const handleJumpToConversation = (conversationId) => {
+    const index = conversations.findIndex((conversation) => conversation.id === conversationId);
+    if (index >= 0) {
+      setCurrentIndex(index);
+    }
+    setIsDataManagerOpen(false);
+  };
+
+  // 数据管理：导出当前筛选结果
+  const handleExportFiltered = (filteredConversations) => {
+    exportConversationsToCsv(filteredConversations, annotationsRef.current);
+    setSaveState(`已导出筛选结果 ${filteredConversations.length} 条`);
+  };
+
   const goPrev = () => setCurrentIndex((index) => Math.max(index - 1, 0));
   const goNext = () => setCurrentIndex((index) => Math.min(index + 1, conversations.length - 1));
 
@@ -480,7 +498,7 @@ export default function App() {
     onToggleLabelShortcut: handleShortcutLabel,
     onSetScoreShortcut: handleScoreShortcut,
     // BUG-20：任一模态面板打开时暂停全局快捷键
-    enabled: !isImportOpen && !isBatchOpen && !isExportOpen && !isSettingsOpen
+    enabled: !isImportOpen && !isBatchOpen && !isExportOpen && !isSettingsOpen && !isDataManagerOpen
   });
 
   if (loading) {
@@ -684,6 +702,7 @@ export default function App() {
             onExport={handleExport}
             onAnalyze={handleAnalyze}
             onImport={() => setIsImportOpen(true)}
+            onOpenDataManager={() => setIsDataManagerOpen(true)}
             onExportReport={() => setIsExportOpen(true)}
             onBatchAnalyze={() => setIsBatchOpen(true)}
             onOpenSettings={() => setIsSettingsOpen(true)}
@@ -742,6 +761,19 @@ export default function App() {
               onClose={() => setIsSettingsOpen(false)}
               onSave={handleSaveSettings}
               onDataRestored={handleDataRestored}
+            />
+          </Suspense>
+        ) : null}
+
+        {isDataManagerOpen ? (
+          <Suspense fallback={null}>
+            <DataManagerPanel
+              open
+              conversations={conversations}
+              annotations={annotations}
+              onClose={() => setIsDataManagerOpen(false)}
+              onJump={handleJumpToConversation}
+              onExportFiltered={handleExportFiltered}
             />
           </Suspense>
         ) : null}

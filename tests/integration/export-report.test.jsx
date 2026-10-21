@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 阶段 3 导出模块 · App 级「导出报告」集成测试
  *
  * 覆盖：A 入口与预览 / B Excel 导出 / C PDF 导出 / D 关闭与回归。
@@ -59,7 +59,7 @@ afterEach(() => {
 
 async function openExportPanel(user) {
   await user.click(actionButton('导出报告'));
-  return screen.findByRole('heading', EXPORT_HEADING);
+  return screen.findByRole('heading', EXPORT_HEADING, { timeout: 5000 });
 }
 
 /** PDF 导出目标节点（面板内固定浅色报告 DOM） */

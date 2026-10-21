@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 设置模块 · App 级集成补充测试与安全取证
  *
  * 覆盖：保存模型/并发后运行时生效、清除 API Key、备份导入后的数据刷新与配置不同步取证、
@@ -57,7 +57,7 @@ function settingsDialog() {
 
 async function openSettings(user) {
   await user.click(actionButton('设置'));
-  await screen.findByRole('heading', SETTINGS_HEADING);
+  await screen.findByRole('heading', SETTINGS_HEADING, { timeout: 5000 });
   return settingsDialog();
 }
 

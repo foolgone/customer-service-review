@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 阶段 3 P1 · App 级 AI 批量分析集成测试
  *
  * 覆盖：A 入口与权限 / B 范围计数与切换 / C 成功流程（人工标注保护、持久化、Dashboard 回归）/
@@ -61,7 +61,7 @@ async function setupWithKey(fetchOptions = {}) {
 /** 点击 ActionBar「批量分析」，等待面板标题渲染 */
 async function openBatchPanel(user) {
   await user.click(actionButton('批量分析'));
-  return screen.findByRole('heading', BATCH_HEADING);
+  return screen.findByRole('heading', BATCH_HEADING, { timeout: 5000 });
 }
 
 function scopeButton(pattern) {

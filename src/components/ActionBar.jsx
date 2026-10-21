@@ -5,6 +5,7 @@ export default function ActionBar({
   onExport,
   onAnalyze,
   onImport,
+  onOpenDataManager,
   onExportReport,
   onBatchAnalyze,
   onOpenSettings,
@@ -22,6 +23,13 @@ export default function ActionBar({
       <div className="flex flex-wrap gap-3">
         <button type="button" onClick={onImport} className="primary-button bg-cyan-500 text-white hover:bg-cyan-600">
           导入数据
+        </button>
+        <button
+          type="button"
+          onClick={onOpenDataManager}
+          className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+        >
+          数据管理
         </button>
         <button type="button" onClick={onPrev} disabled={!canPrev} className="primary-button bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
           上一条

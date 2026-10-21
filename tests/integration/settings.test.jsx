@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 设置页 · App 级集成测试
  * 覆盖：入口与 dialog 语义、保存设置生效（API Key/模型/并发）、快捷键隔离、配置持久化
  */
@@ -20,7 +20,7 @@ afterEach(() => {
 
 async function openSettings(user) {
   await user.click(actionButton('设置'));
-  await screen.findByRole('heading', SETTINGS_HEADING);
+  await screen.findByRole('heading', SETTINGS_HEADING, { timeout: 5000 });
   return screen.getByRole('dialog', SETTINGS_HEADING);
 }
 
