@@ -362,7 +362,7 @@ describe('BatchAnalysisPanel 分析结果', () => {
     expect(item.textContent).not.toContain('x'.repeat(170));
   });
 
-  it('失败条数超过 10 → 失败详情最多展示 10 条', async () => {
+  it('失败条数超过 50 → 失败详情展示前 50 条并标注总数（BUG-17 已修复）', async () => {
     const conversations = Array.from({ length: 11 }, (_, index) => makeConversation(`conv-${index + 1}`));
     const fetchMock = vi.fn(async () => makeErrorResponse(500, 'server error'));
     vi.stubGlobal('fetch', fetchMock);
@@ -372,8 +372,8 @@ describe('BatchAnalysisPanel 分析结果', () => {
     await user.click(screen.getByRole('button', { name: '开始分析 11 条' }));
 
     expect(await screen.findByText('分析完成：成功 0 条 · 失败 11 条')).toBeInTheDocument();
-    const details = screen.getByText('查看 10 条失败原因').closest('details');
-    expect(details.querySelectorAll('li')).toHaveLength(10);
+    const details = screen.getByText('查看 11 条失败原因').closest('details');
+    expect(details.querySelectorAll('li')).toHaveLength(11);
   });
 
   it('批量执行链路抛出 Error → 展示「批量分析失败」与错误信息', async () => {
@@ -476,9 +476,9 @@ describe('BatchAnalysisPanel 运行中与取消', () => {
       pendingResolvers[0](makeSuccessResponse());
     });
 
-    expect(await screen.findByText('已取消：完成 1 条')).toBeInTheDocument();
-    // 当前实现：被取消而跳过的项也计入 completed，因此进度为 100%
-    expect(screen.getByText('100%')).toBeInTheDocument();
+    expect(await screen.findByText('已取消：完成 1 条 · 跳过 1 条')).toBeInTheDocument();
+    // BUG-16：取消后进度按「已处理」计算，跳过项不计入完成
+    expect(screen.getByText('50%')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '开始分析 2 条' })).toBeEnabled();
     expect(props.onApplyResults).toHaveBeenCalledWith([
       { id: 'conv-a', labels: ['accurate'], reason: '回复准确' }

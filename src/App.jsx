@@ -6,7 +6,7 @@ import ConversationPanel from './components/ConversationPanel';
 import Dashboard from './components/Dashboard';
 import LabelSelector from './components/LabelSelector';
 import ScoreSelector from './components/ScoreSelector';
-import { buildAnalytics } from './lib/analytics';
+import { buildAnalytics, isHumanReviewed } from './lib/analytics';
 import { DEFAULT_ANNOTATION, DEEPSEEK_DEFAULT_MODEL, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
 import { exportConversationsToCsv } from './lib/csv';
 import { analyzeWithDeepSeek } from './lib/deepseek';
@@ -81,6 +81,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState(getApiKey);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
   const reviewStartedAtRef = useRef(Date.now());
@@ -184,7 +185,7 @@ export default function App() {
   const assistantContent = useMemo(() => getConversationText(currentConversation, 'assistant'), [currentConversation]);
   const conversationIds = useMemo(() => new Set(conversations.map((conversation) => conversation.id)), [conversations]);
   const reviewedCount = useMemo(
-    () => Object.keys(annotations).filter((id) => conversationIds.has(id)).length,
+    () => Object.keys(annotations).filter((id) => conversationIds.has(id) && isHumanReviewed(annotations[id])).length,
     [annotations, conversationIds]
   );
   const completionRate = totalCount ? Math.min(Math.round((reviewedCount / totalCount) * 100), 100) : 0;
@@ -398,6 +399,8 @@ export default function App() {
     }
 
     const nowIso = getNowIso();
+    // BUG-15：让紧随其后的自动保存 effect 跳过提示覆盖，保留批量完成反馈
+    aiNoticeRef.current = true;
 
     setAnnotations((previous) => {
       const next = { ...previous };
@@ -654,6 +657,7 @@ export default function App() {
             canNext={currentIndex < conversations.length - 1}
             isAnalyzing={isAnalyzing}
             isSaving={isSaving}
+            isBatchAnalyzing={isBatchRunning}
             hasApiKey={hasApiKey}
             onToggleTheme={toggleTheme}
             themeLabel={themeLabel}
@@ -679,6 +683,7 @@ export default function App() {
             model={getModel()}
             onClose={() => setIsBatchOpen(false)}
             onApplyResults={handleApplyBatchResults}
+            onRunningChange={setIsBatchRunning}
           />
         ) : null}
 

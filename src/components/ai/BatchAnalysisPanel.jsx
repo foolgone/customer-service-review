@@ -8,6 +8,8 @@ const SCOPE_OPTIONS = [
   { value: 'all', label: '全部对话', hint: '重新分析所有对话' }
 ];
 
+const MAX_ERROR_ITEMS = 50;
+
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
 }
@@ -38,7 +40,16 @@ function getScopeCandidates(conversations, annotations, scope) {
     });
 }
 
-export default function BatchAnalysisPanel({ open, conversations, annotations, apiKey, model, onClose, onApplyResults }) {
+export default function BatchAnalysisPanel({
+  open,
+  conversations,
+  annotations,
+  apiKey,
+  model,
+  onClose,
+  onApplyResults,
+  onRunningChange
+}) {
   const [scope, setScope] = useState('unanalyzed');
   const [concurrency, setConcurrency] = useState(3);
   const [status, setStatus] = useState('idle');
@@ -57,6 +68,10 @@ export default function BatchAnalysisPanel({ open, conversations, annotations, a
     () => getScopeCandidates(conversations, annotations, scope),
     [conversations, annotations, scope]
   );
+
+  useEffect(() => {
+    onRunningChange?.(running);
+  }, [running, onRunningChange]);
 
   useEffect(() => {
     if (!open) {
@@ -133,7 +148,7 @@ export default function BatchAnalysisPanel({ open, conversations, annotations, a
 
       const failedItems = outcome.results
         .filter((item) => item.status === 'error')
-        .slice(0, 10)
+        .slice(0, MAX_ERROR_ITEMS)
         .map((item) => ({ id: item.item.id, message: item.error }));
 
       setErrors(failedItems);
@@ -151,12 +166,15 @@ export default function BatchAnalysisPanel({ open, conversations, annotations, a
     return null;
   }
 
-  const percent = progress.total ? Math.round((progress.completed / progress.total) * 100) : 0;
+  // BUG-16：进度只按「已处理（成功+失败）」计算，取消导致的 skipped 不算完成
+  const processed = progress.success + progress.failed;
+  const percent = progress.total ? Math.round((processed / progress.total) * 100) : 0;
+  const skipped = Math.max(progress.total - processed, 0);
   const summaryText = {
     idle: '选择范围后开始批量分析',
-    running: `正在分析：${progress.completed} / ${progress.total}`,
+    running: `正在分析：${processed} / ${progress.total}`,
     done: `分析完成：成功 ${progress.success} 条${progress.failed ? ` · 失败 ${progress.failed} 条` : ''}`,
-    cancelled: `已取消：完成 ${progress.success} 条${progress.failed ? ` · 失败 ${progress.failed} 条` : ''}`,
+    cancelled: `已取消：完成 ${progress.success} 条${progress.failed ? ` · 失败 ${progress.failed} 条` : ''}${skipped ? ` · 跳过 ${skipped} 条` : ''}`,
     error: '批量分析失败'
   }[status];
 
@@ -255,7 +273,10 @@ export default function BatchAnalysisPanel({ open, conversations, annotations, a
 
           {errors.length ? (
             <details className="rounded-2xl border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
-              <summary className="cursor-pointer font-medium">查看 {errors.length} 条失败原因</summary>
+              <summary className="cursor-pointer font-medium">
+                查看 {errors.length} 条失败原因
+                {progress.failed > errors.length ? `（共 ${progress.failed} 条，仅展示前 ${errors.length} 条）` : ''}
+              </summary>
               <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto pr-2">
                 {errors.map((item) => (
                   <li key={item.id} className="leading-6">
@@ -267,7 +288,7 @@ export default function BatchAnalysisPanel({ open, conversations, annotations, a
           ) : null}
 
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            提示：批量分析逐条请求，取消后已发出的请求会先返回；结果是 AI 建议，仍需人工确认。
+            提示：批量分析逐条请求；取消后已完成的结果仍会保存到标注中（AI 建议仍需人工确认）。
           </p>
         </div>
 

@@ -120,12 +120,12 @@ describe('todayReviewCount', () => {
     expect(buildAnalytics(conversations, annotations).todayReviewCount).toBe(1);
   });
 
-  it('reviewedAt 为空、updatedAt 为今天 → 也计入今日审核', () => {
+  it('只有 updatedAt（没有 reviewedAt 与标签）→ 不算人工审核，不计入今日审核（BUG-14 口径）', () => {
     const annotations = {
       '001': makeAnnotation({ reviewedAt: '', updatedAt: new Date().toISOString(), labels: [] })
     };
 
-    expect(buildAnalytics(conversations, annotations).todayReviewCount).toBe(1);
+    expect(buildAnalytics(conversations, annotations).todayReviewCount).toBe(0);
   });
 
   it('多个今日标注 → 全部计入', () => {
@@ -409,25 +409,42 @@ describe('todaySeries', () => {
   });
 });
 
-describe('标注过滤规则（实际行为断言）', () => {
-  it('无 timestamp 但有 labels → 仍计入 reviewedCount', () => {
+describe('标注过滤规则（人工结论口径，BUG-14）', () => {
+  it('无 timestamp 但有 labels → 计入 reviewedCount', () => {
     const annotations = { '001': { labels: ['accurate'] } };
     expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(1);
   });
 
-  it('无 timestamp 但有 comment → 仍计入 reviewedCount', () => {
+  it('无 timestamp 但有 reviewedAt → 计入 reviewedCount', () => {
+    const annotations = { '001': { reviewedAt: new Date().toISOString() } };
+    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(1);
+  });
+
+  it('只有 comment（没有标签/审核时间）→ 不计入 reviewedCount', () => {
     const annotations = { '001': { labels: [], comment: '有备注' } };
-    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(1);
+    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(0);
   });
 
-  it('无 timestamp 但 score 为 3（默认分）→ 仍计入 reviewedCount', () => {
+  it('只有默认分 3（没有标签/审核时间）→ 不计入 reviewedCount', () => {
     const annotations = { '001': { score: 3 } };
-    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(1);
+    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(0);
   });
 
-  it('默认标注对象（score 3、labels 空）→ 计入 reviewedCount', () => {
+  it('默认标注对象（score 3、labels 空）→ 不计入 reviewedCount', () => {
     const annotations = { '001': { ...DEFAULT_ANNOTATION } };
-    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(1);
+    expect(buildAnalytics(conversations, annotations).reviewedCount).toBe(0);
+  });
+
+  it('只有 AI 建议（aiLabels/aiAt）→ 不计入 reviewedCount，避免纯 AI 被算作已审核', () => {
+    const annotations = {
+      '001': makeAnnotation({ labels: [], reviewedAt: '', aiLabels: ['accurate'], aiReason: '准确', aiAt: new Date().toISOString() })
+    };
+
+    const result = buildAnalytics(conversations, annotations);
+
+    expect(result.reviewedCount).toBe(0);
+    expect(result.pendingCount).toBe(result.totalCount);
+    expect(result.aiAdoptionRate).toBe(0);
   });
 
   it('空对象或 score 为 0 的标注 → 不计入 reviewedCount', () => {

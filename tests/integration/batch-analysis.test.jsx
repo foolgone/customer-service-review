@@ -218,9 +218,9 @@ describe('C. 成功流程（mock DeepSeek 成功）', () => {
       });
     });
 
-    // 批量结果触发自动保存；「已标注」计数与 Dashboard（AI 建议采纳率）正常渲染
-    await waitFor(() => expect(saveStatus()).toHaveTextContent(/已自动保存/));
-    expect(reviewedCard()).toHaveTextContent('2 / 2');
+    // BUG-15：批量完成提示不再被自动保存覆盖；BUG-14：纯 AI 建议不算人工审核
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('批量分析完成：2 条 AI 建议已保存'));
+    expect(reviewedCard()).toHaveTextContent('0 / 2');
     expect(screen.getByText('AI 建议采纳率').parentElement).toHaveTextContent('0%');
 
     // 完成后面板两个「关闭」按钮恢复可用

@@ -83,6 +83,17 @@ function getUserPreview(conversation) {
   return conversation?.turns?.find((turn) => turn.role === 'user')?.content?.slice(0, 30) || '无用户消息';
 }
 
+/**
+ * 是否已被人工作出结论（用于「已标注 / 已审核」口径，BUG-14）
+ * 纯 AI 建议（只有 aiLabels/aiReason/aiAt）不算人工审核。
+ * @param {Object} annotation - 标注对象
+ * @returns {boolean} 是否存在人工结论
+ */
+export function isHumanReviewed(annotation) {
+  const labels = toLabelArray(annotation?.labels);
+  return labels.length > 0 || Boolean(annotation?.reviewedAt);
+}
+
 export function buildAnalytics(conversations, annotations) {
   const conversationMap = buildConversationMap(conversations);
   const records = Object.entries(annotations || {})
@@ -93,7 +104,7 @@ export function buildAnalytics(conversations, annotations) {
       timestamp: getTimestamp(annotation || {})
     }))
     .filter((record) => conversationMap.has(record.id))
-    .filter((record) => record.timestamp > 0 || record.labels.length || record.comment || record.score);
+    .filter((record) => isHumanReviewed(record));
 
   const reviewedCount = records.length;
   const totalCount = conversations.length;
