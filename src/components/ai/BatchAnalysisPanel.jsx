@@ -48,12 +48,13 @@ export default function BatchAnalysisPanel({
   annotations,
   apiKey,
   model,
+  defaultConcurrency = 3,
   onClose,
   onApplyResults,
   onRunningChange
 }) {
   const [scope, setScope] = useState('unanalyzed');
-  const [concurrency, setConcurrency] = useState(3);
+  const [concurrency, setConcurrency] = useState(defaultConcurrency);
   const [status, setStatus] = useState('idle');
   const [progress, setProgress] = useState({ completed: 0, total: 0, success: 0, failed: 0 });
   const [errors, setErrors] = useState([]);
@@ -81,13 +82,13 @@ export default function BatchAnalysisPanel({
       abortRef.current?.abort();
       abortRef.current = null;
       setScope('unanalyzed');
-      setConcurrency(3);
+      setConcurrency(defaultConcurrency);
       setStatus('idle');
       setProgress({ completed: 0, total: 0, success: 0, failed: 0 });
       setErrors([]);
       setError('');
     }
-  }, [open]);
+  }, [open, defaultConcurrency]);
 
   const handleStart = useCallback(async () => {
     if (!candidates.length || running) {

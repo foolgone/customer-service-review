@@ -7,6 +7,7 @@ export default function ActionBar({
   onImport,
   onExportReport,
   onBatchAnalyze,
+  onOpenSettings,
   isBatchAnalyzing = false,
   canPrev,
   canNext,
@@ -54,6 +55,13 @@ export default function ActionBar({
         </button>
         <button type="button" onClick={onToggleTheme} className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:bg-cyan-500/5 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100">
           {themeLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:bg-cyan-500/5 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100"
+        >
+          设置
         </button>
       </div>
 

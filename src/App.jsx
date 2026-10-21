@@ -7,9 +7,10 @@ import Dashboard from './components/Dashboard';
 import LabelSelector from './components/LabelSelector';
 import ScoreSelector from './components/ScoreSelector';
 import { buildAnalytics, isHumanReviewed } from './lib/analytics';
-import { DEFAULT_ANNOTATION, DEEPSEEK_DEFAULT_MODEL, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
+import { DEFAULT_ANNOTATION, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
 import { exportConversationsToCsv } from './lib/csv';
 import { analyzeWithDeepSeek } from './lib/deepseek';
+import { loadSettings, saveSettings } from './lib/settings';
 import { addImportHistory, loadAnnotations, normalizeAnnotation, saveAnnotations } from './lib/storage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
@@ -18,6 +19,8 @@ import { useTheme } from './hooks/useTheme';
 const ImportWizard = lazy(() => import('./components/import/ImportWizard'));
 // 导出面板按需加载：html2canvas / jspdf / xlsx 体积较大，只在导出时加载
 const ExportReportPanel = lazy(() => import('./components/export/ExportReportPanel'));
+// 设置面板按需加载
+const SettingsPanel = lazy(() => import('./components/settings/SettingsPanel'));
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -29,14 +32,6 @@ function getProgressLabel(currentIndex, total) {
   }
 
   return `${currentIndex + 1} / ${total}`;
-}
-
-function getApiKey() {
-  return import.meta.env.VITE_DEEPSEEK_API_KEY || '';
-}
-
-function getModel() {
-  return import.meta.env.VITE_DEEPSEEK_MODEL || DEEPSEEK_DEFAULT_MODEL;
 }
 
 const LABEL_DISPLAY_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
@@ -80,10 +75,13 @@ export default function App() {
   const [analysisState, setAnalysisState] = useState({ status: 'idle', reason: '', labels: [], error: '' });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [apiKey, setApiKey] = useState(getApiKey);
+  const [apiKey, setApiKey] = useState(() => loadSettings().apiKey);
+  const [aiModel, setAiModel] = useState(() => loadSettings().model);
+  const [batchConcurrency, setBatchConcurrency] = useState(() => loadSettings().concurrency);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
@@ -299,7 +297,7 @@ export default function App() {
         apiKey,
         userContent,
         assistantContent,
-        model: getModel()
+        model: aiModel
       });
 
       const nowIso = getNowIso();
@@ -363,17 +361,37 @@ export default function App() {
 
     if (!trimmedApiKey) {
       setApiKey('');
+      saveSettings({ ...loadSettings(), apiKey: '' });
       setSaveState('已清除会话内 DeepSeek API Key');
       return;
     }
 
     setApiKey(trimmedApiKey);
+    saveSettings({ ...loadSettings(), apiKey: trimmedApiKey });
     setSaveState('DeepSeek API Key 已导入到当前会话');
   };
 
   const handleClearApiKey = () => {
     setApiKey('');
+    saveSettings({ ...loadSettings(), apiKey: '' });
     setSaveState('已清除会话内 DeepSeek API Key');
+  };
+
+  // 设置页保存：同步运行时配置并落盘
+  const handleSaveSettings = (nextSettings) => {
+    const saved = saveSettings(nextSettings);
+    setApiKey(saved.apiKey);
+    setAiModel(saved.model);
+    setBatchConcurrency(saved.concurrency);
+    setSaveState('设置已保存');
+  };
+
+  // 设置页恢复/清空数据后重新加载标注
+  const handleDataRestored = () => {
+    const stored = loadAnnotations();
+    setAnnotations(stored);
+    annotationsRef.current = stored;
+    setSaveState('本地数据已更新');
   };
 
   const goPrev = () => setCurrentIndex((index) => Math.max(index - 1, 0));
@@ -453,7 +471,7 @@ export default function App() {
     onToggleLabelShortcut: handleShortcutLabel,
     onSetScoreShortcut: handleScoreShortcut,
     // BUG-20：任一模态面板打开时暂停全局快捷键
-    enabled: !isImportOpen && !isBatchOpen && !isExportOpen
+    enabled: !isImportOpen && !isBatchOpen && !isExportOpen && !isSettingsOpen
   });
 
   if (loading) {
@@ -659,6 +677,7 @@ export default function App() {
             onImport={() => setIsImportOpen(true)}
             onExportReport={() => setIsExportOpen(true)}
             onBatchAnalyze={() => setIsBatchOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
             canPrev={currentIndex > 0}
             canNext={currentIndex < conversations.length - 1}
             isAnalyzing={isAnalyzing}
@@ -686,7 +705,8 @@ export default function App() {
             conversations={conversations}
             annotations={annotations}
             apiKey={apiKey}
-            model={getModel()}
+            model={aiModel}
+            defaultConcurrency={batchConcurrency}
             onClose={() => setIsBatchOpen(false)}
             onApplyResults={handleApplyBatchResults}
             onRunningChange={setIsBatchRunning}
@@ -701,6 +721,18 @@ export default function App() {
               annotations={annotations}
               analytics={analytics}
               onClose={() => setIsExportOpen(false)}
+            />
+          </Suspense>
+        ) : null}
+
+        {isSettingsOpen ? (
+          <Suspense fallback={null}>
+            <SettingsPanel
+              open
+              settings={{ apiKey, model: aiModel, concurrency: batchConcurrency }}
+              onClose={() => setIsSettingsOpen(false)}
+              onSave={handleSaveSettings}
+              onDataRestored={handleDataRestored}
             />
           </Suspense>
         ) : null}

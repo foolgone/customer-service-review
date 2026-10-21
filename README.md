@@ -66,14 +66,13 @@ tests/
 
 ### DeepSeek API 配置
 
-创建 `.env` 文件（参考 `.env.example`）：
+在应用内点击底部操作栏的「设置」，填写 **DeepSeek API Key**（可选模型与批量分析默认并发），保存即可：
 
-```bash
-VITE_DEEPSEEK_API_KEY=your_api_key_here
-VITE_DEEPSEEK_MODEL=deepseek-chat
-```
+- API Key 仅保存在本机浏览器 `localStorage`（配置项 `cs-review-config-v1`），不会上传到服务器
+- **不再通过构建期环境变量注入**（`VITE_DEEPSEEK_API_KEY` 已废弃），避免 Key 被打进前端产物
+- `VITE_DEEPSEEK_MODEL` 仍可作为模型默认值（不敏感）
 
-> 💡 如果没有配置 API Key，人工质检功能仍可正常使用，但 AI 分析功能将不可用。
+> 💡 如果没有配置 API Key，人工质检功能仍可正常使用，但 AI 分析与批量分析功能将不可用。
 
 ## 📖 使用说明
 
