@@ -4,6 +4,7 @@ export default function ActionBar({
   onSave,
   onExport,
   onAnalyze,
+  onImport,
   canPrev,
   canNext,
   isAnalyzing,
@@ -15,6 +16,9 @@ export default function ActionBar({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-3">
+        <button type="button" onClick={onImport} className="primary-button bg-cyan-500 text-white hover:bg-cyan-600">
+          导入数据
+        </button>
         <button type="button" onClick={onPrev} disabled={!canPrev} className="primary-button bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
           上一条
         </button>

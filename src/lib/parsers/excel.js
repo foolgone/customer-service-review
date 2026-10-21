@@ -74,6 +74,7 @@ export async function parseExcel(file, options = {}) {
     return {
       success: true,
       data: valid,
+      rows,
       errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
       sheets: sheetNames,
       preview,

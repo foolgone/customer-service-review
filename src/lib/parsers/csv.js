@@ -47,6 +47,7 @@ export async function parseCSV(file, options = {}) {
           resolve({
             success: true,
             data: valid,
+            rows: results.data,
             errors: [
               ...results.errors.map(err => `解析错误：${err.message}`),
               ...invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)

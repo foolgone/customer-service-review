@@ -96,20 +96,20 @@ export function validateFile(file, options = {}) {
     maxSize = 10 * 1024 * 1024 // 10MB
   } = options;
 
-  // 验证文件类型（MIME）
-  if (!allowedTypes.includes(file.type)) {
+  // 验证文件名
+  if (!file.name || file.name.trim().length === 0) {
     return {
       valid: false,
-      error: `不支持的文件类型：${file.type}。支持的类型：JSON, CSV, Excel, TXT`
+      error: '文件名不能为空'
     };
   }
 
-  // 验证文件扩展名
+  // 验证文件扩展名（扩展名是唯一权威判断：Windows 上 .csv 的 MIME 常被报成 application/vnd.ms-excel）
   const ext = file.name.split('.').pop()?.toLowerCase();
   if (!ext || !allowedExtensions.includes(ext)) {
     return {
       valid: false,
-      error: `不支持的文件扩展名：.${ext}。支持的扩展名：${allowedExtensions.join(', ')}`
+      error: `不支持的文件扩展名：.${ext || '(无)'}。支持：${allowedExtensions.join(', ')}`
     };
   }
 
@@ -123,12 +123,9 @@ export function validateFile(file, options = {}) {
     };
   }
 
-  // 验证文件名
-  if (!file.name || file.name.trim().length === 0) {
-    return {
-      valid: false,
-      error: '文件名不能为空'
-    };
+  // MIME 仅作参考：与扩展名不一致时以扩展名为准（浏览器/系统给出的 MIME 并不可靠）
+  if (file.type && !allowedTypes.includes(file.type)) {
+    console.warn(`文件 MIME 与扩展名不一致（${file.type} / .${ext}），按扩展名处理`);
   }
 
   return { valid: true, error: null };

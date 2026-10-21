@@ -56,6 +56,7 @@ export function buildAnalytics(conversations, annotations) {
   const conversationMap = buildConversationMap(conversations);
   const records = Object.entries(annotations || {})
     .map(([id, annotation]) => ({ id, ...annotation, timestamp: getTimestamp(annotation) }))
+    .filter((record) => conversationMap.has(record.id))
     .filter((record) => record.timestamp > 0 || record.labels?.length || record.comment || record.score);
 
   const reviewedCount = records.length;

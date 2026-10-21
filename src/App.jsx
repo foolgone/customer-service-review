@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from './components/ActionBar';
 import AnalysisPanel from './components/AnalysisPanel';
 import ConversationPanel from './components/ConversationPanel';
@@ -9,9 +9,12 @@ import { buildAnalytics } from './lib/analytics';
 import { DEFAULT_ANNOTATION, DEEPSEEK_DEFAULT_MODEL, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE } from './lib/constants';
 import { exportConversationsToCsv } from './lib/csv';
 import { analyzeWithDeepSeek } from './lib/deepseek';
-import { loadAnnotations, normalizeAnnotation, saveAnnotations } from './lib/storage';
+import { addImportHistory, loadAnnotations, normalizeAnnotation, saveAnnotations } from './lib/storage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
+
+// 导入向导按需加载：xlsx / papaparse 体积较大，不打开导入时不影响首屏
+const ImportWizard = lazy(() => import('./components/import/ImportWizard'));
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -62,6 +65,8 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [apiKey, setApiKey] = useState(getApiKey);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
   const reviewStartedAtRef = useRef(Date.now());
   const currentConversation = conversations[currentIndex];
@@ -77,8 +82,10 @@ export default function App() {
         }
 
         const data = await response.json();
+        const list = Array.isArray(data) ? data : [];
         if (!ignore) {
-          setConversations(Array.isArray(data) ? data : []);
+          setConversations(list);
+          setDataSource({ label: '示例数据', imported: false, fileName: '' });
           setLoading(false);
         }
       } catch (loadError) {
@@ -151,8 +158,12 @@ export default function App() {
   const currentId = currentConversation?.id || '-';
   const userContent = useMemo(() => getConversationText(currentConversation, 'user'), [currentConversation]);
   const assistantContent = useMemo(() => getConversationText(currentConversation, 'assistant'), [currentConversation]);
-  const reviewedCount = Object.keys(annotations).length;
-  const completionRate = totalCount ? Math.round((reviewedCount / totalCount) * 100) : 0;
+  const conversationIds = useMemo(() => new Set(conversations.map((conversation) => conversation.id)), [conversations]);
+  const reviewedCount = useMemo(
+    () => Object.keys(annotations).filter((id) => conversationIds.has(id)).length,
+    [annotations, conversationIds]
+  );
+  const completionRate = totalCount ? Math.min(Math.round((reviewedCount / totalCount) * 100), 100) : 0;
   const progressLabel = getProgressLabel(currentIndex, totalCount);
   const hasApiKey = Boolean(apiKey);
   const analytics = useMemo(() => buildAnalytics(conversations, annotations), [annotations, conversations]);
@@ -331,6 +342,39 @@ export default function App() {
   const goPrev = () => setCurrentIndex((index) => Math.max(index - 1, 0));
   const goNext = () => setCurrentIndex((index) => Math.min(index + 1, conversations.length - 1));
 
+  const handleImportConversations = ({ conversations: importedConversations, meta }) => {
+    setConversations(importedConversations);
+    setCurrentIndex(0);
+    setAnalysisState({ status: 'idle', reason: '', labels: [], error: '' });
+    setDataSource({ label: `${meta.format} · ${meta.fileName}`, imported: true, fileName: meta.fileName });
+    addImportHistory({
+      fileName: meta.fileName,
+      format: meta.format,
+      total: meta.total,
+      valid: meta.valid,
+      invalid: meta.invalid
+    });
+    setSaveState(`已导入 ${meta.valid} 条对话`);
+    setIsImportOpen(false);
+  };
+
+  const handleRestoreSample = async () => {
+    try {
+      const response = await fetch('/data/conversations.json');
+      if (!response.ok) {
+        throw new Error(`读取示例数据失败：${response.status}`);
+      }
+
+      const data = await response.json();
+      setConversations(Array.isArray(data) ? data : []);
+      setCurrentIndex(0);
+      setDataSource({ label: '示例数据', imported: false, fileName: '' });
+      setSaveState('已恢复示例数据');
+    } catch (restoreError) {
+      setSaveState(restoreError instanceof Error ? restoreError.message : '恢复示例数据失败');
+    }
+  };
+
   const themeLabel = isDark ? '切换浅色模式' : '切换深色模式';
 
   useKeyboardShortcuts({
@@ -379,6 +423,26 @@ export default function App() {
               <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">
                 企业级审核工作台，支持聊天式对话浏览、标签标注、1~5 分评分、AI 辅助建议、自动保存、CSV 导出和快捷键高频操作。
               </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span
+                  className="max-w-full truncate rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-900 dark:text-slate-300"
+                  title={dataSource.label}
+                >
+                  数据源：{dataSource.label}（{totalCount} 条）
+                </span>
+                {dataSource.imported ? (
+                  <>
+                    <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-cyan-700 dark:text-cyan-300">已导入 · 刷新需重新导入</span>
+                    <button
+                      type="button"
+                      onClick={handleRestoreSample}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-cyan-200"
+                    >
+                      恢复示例数据
+                    </button>
+                  </>
+                ) : null}
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[520px]">
@@ -522,6 +586,7 @@ export default function App() {
             onSave={handleSave}
             onExport={handleExport}
             onAnalyze={handleAnalyze}
+            onImport={() => setIsImportOpen(true)}
             canPrev={currentIndex > 0}
             canNext={currentIndex < conversations.length - 1}
             isAnalyzing={isAnalyzing}
@@ -532,8 +597,18 @@ export default function App() {
           />
         </section>
 
+        {isImportOpen ? (
+          <Suspense fallback={null}>
+            <ImportWizard
+              open
+              onClose={() => setIsImportOpen(false)}
+              onImport={handleImportConversations}
+            />
+          </Suspense>
+        ) : null}
+
         <footer className="pb-2 text-center text-xs text-slate-500 dark:text-slate-400">
-          本地标注会自动保存到浏览器 localStorage · 支持导出 CSV · 支持快捷键 · 共 {LABELS.length} 个标签
+          本地标注会自动保存到浏览器 localStorage · 支持 JSON/CSV/Excel 导入 · 支持导出 CSV · 共 {LABELS.length} 个标签
         </footer>
       </div>
     </main>
