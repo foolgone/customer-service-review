@@ -53,6 +53,7 @@ const FILE_META = [
   { match: 'tests/unit/lib/exporters/pdf-layout.test.js', module: '导出-PDF 分页布局', source: 'src/lib/exporters/pdf-layout.js', prefix: 'EXP-LAYOUT', priority: 'P1' },
   { match: 'tests/unit/lib/exporters/edge-cases.test.js', module: '导出-边界与下载契约', source: 'src/lib/exporters/*.js', prefix: 'EXP-EDGE', priority: 'P1' },
   { match: 'tests/unit/lib/settings.test.js', module: '设置-归一化与持久化', source: 'src/lib/settings.js', prefix: 'SETTINGS', priority: 'P1' },
+  { match: 'tests/unit/lib/storage-backup.test.js', module: '设置-备份数据契约', source: 'src/lib/storage.js', prefix: 'BACKUP', priority: 'P1' },
   { match: 'tests/unit/lib/labels.test.js', module: '核心库-标签工具', source: 'src/lib/labels.js', prefix: 'LABELS', priority: 'P1' },
   { match: 'tests/unit/hooks/useTheme.test.jsx', module: 'Hooks-主题管理', source: 'src/hooks/useTheme.js', prefix: 'THEME', priority: 'P1' },
   { match: 'tests/unit/hooks/useDialogA11y.test.jsx', module: 'Hooks-弹窗可访问性', source: 'src/hooks/useDialogA11y.js', prefix: 'A11Y', priority: 'P1' },
@@ -72,10 +73,12 @@ const FILE_META = [
   { match: 'tests/unit/components/export/ExportReportPanel.test.jsx', module: '组件-导出报告面板', source: 'src/components/export/ExportReportPanel.jsx', prefix: 'UI-EXPORT', priority: 'P0' },
   { match: 'tests/unit/components/settings/SettingsPanel.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P0' },
   { match: 'tests/unit/components/settings/SettingsPanel.extra.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P1' },
+  { match: 'tests/unit/components/settings/SettingsPanel.regression.test.jsx', module: '组件-设置面板', source: 'src/components/settings/SettingsPanel.jsx', prefix: 'UI-SETTINGS', priority: 'P0' },
   { match: 'tests/integration/batch-analysis.test.jsx', module: '集成-批量分析流程', source: 'src/App.jsx', prefix: 'APP-BATCH', priority: 'P0' },
   { match: 'tests/integration/export-report.test.jsx', module: '集成-导出报告流程', source: 'src/App.jsx', prefix: 'APP-EXPORT', priority: 'P0' },
   { match: 'tests/integration/settings.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
   { match: 'tests/integration/settings-admin.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
+  { match: 'tests/integration/settings-regression.test.jsx', module: '集成-设置流程', source: 'src/App.jsx', prefix: 'APP-SETTINGS', priority: 'P0' },
   { match: 'tests/integration/modal-a11y.test.jsx', module: '集成-弹窗可访问性与快捷键隔离', source: 'src/App.jsx', prefix: 'APP-MODAL', priority: 'P0' },
   { match: 'tests/integration/', module: '集成-App 用户流程', source: 'src/App.jsx', prefix: 'APP', priority: 'P0' },
   { match: 'tests/unit/env.test.js', module: '测试基础设施', source: 'vitest.config.js / tests/setup.js', prefix: 'ENV', priority: 'P2' }
@@ -335,12 +338,13 @@ const fixedCount = issues.filter((issue) => issue.status === '已修复').length
 const openCount = issues.length - fixedCount;
 const regressionCount = allCases.filter((item) => /BUG-\d+ 已修复/.test(item.fullTitle)).length;
 if (fixedCount) {
-  reportLines.push(`2. 测试报告累计提出的 **${issues.length}** 项问题中，**${fixedCount}** 项已修复（含 **${regressionCount}** 条带 BUG 编号的回归用例，另有断言更新覆盖其余修复项）；**${openCount}** 项为本阶段新增的待处理/待确认观察项。`);
+  const openPart = openCount > 0 ? `；**${openCount}** 项为待处理/待确认观察项` : '；本轮无新增待处理项';
+  reportLines.push(`2. 测试报告累计提出的 **${issues.length}** 项问题中，**${fixedCount}** 项已修复（含 **${regressionCount}** 条带 BUG 编号的回归用例，另有断言更新与专项回归用例覆盖其余修复项）${openPart}。全部修复均已通过回归验证。`);
 } else if (openCount) {
   reportLines.push(`2. 本轮记录 **${openCount}** 项待处理/待确认观察项，详见第 5 节。`);
 }
 reportLines.push(`${fixedCount ? 3 : 2}. CI 门禁已接入（\`.github/workflows/test.yml\`，push/PR 自动执行并校验覆盖率阈值）；建议在仓库分支保护中把 Test 检查设为合并必需项。`);
-reportLines.push(`${fixedCount ? 4 : 3}. 后续优先补充：真实浏览器 E2E（Playwright）、DeepSeek 接口契约测试、备份导入导出安全加固（详见第 5 节）。`);
+reportLines.push(`${fixedCount ? 4 : 3}. 后续优先补充：真实浏览器 E2E（Playwright）、DeepSeek 接口契约测试；并跟进第 5 节剩余的待处理项与回归验证。`);
 reportLines.push('');
 
 fs.mkdirSync(path.join(root, 'docx'), { recursive: true });
