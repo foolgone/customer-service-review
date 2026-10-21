@@ -1,4 +1,5 @@
 import { LABELS, SCORE_LEVELS } from './constants';
+import { toLabelArray } from './labels';
 
 const LABEL_VALUE_MAP = new Map(LABELS.map((item) => [item.value, item]));
 
@@ -17,26 +18,6 @@ function getTimestamp(annotation) {
   }
 
   return 0;
-}
-
-/**
- * 把多选标签归一化成数组，兼容字符串等脏数据，避免统计页因类型错误白屏
- * @param {any} value - 原始 labels/aiLabels
- * @returns {string[]} 标签数组
- */
-function toLabelArray(value) {
-  if (Array.isArray(value)) {
-    return value.filter((label) => typeof label === 'string');
-  }
-
-  if (typeof value === 'string' && value.trim()) {
-    return value
-      .split('|')
-      .map((label) => label.trim())
-      .filter(Boolean);
-  }
-
-  return [];
 }
 
 function getDayStart(timestamp) {

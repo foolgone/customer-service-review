@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { createProvider, normalizeConcurrency, runBatchAnalysis, MAX_BATCH_CONCURRENCY } from '../../lib/ai';
 import { normalizeAnnotation } from '../../lib/storage';
 
@@ -9,6 +10,7 @@ const SCOPE_OPTIONS = [
 ];
 
 const MAX_ERROR_ITEMS = 50;
+const TITLE_ID = 'batch-analysis-title';
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -58,6 +60,7 @@ export default function BatchAnalysisPanel({
   const [error, setError] = useState('');
   const abortRef = useRef(null);
   const running = status === 'running';
+  const dialogRef = useDialogA11y({ open, onClose, disableClose: running });
 
   const scopeCounts = useMemo(
     () => Object.fromEntries(SCOPE_OPTIONS.map((option) => [option.value, getScopeCandidates(conversations, annotations, option.value).length])),
@@ -85,21 +88,6 @@ export default function BatchAnalysisPanel({
       setError('');
     }
   }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    function handleKeyDown(event) {
-      if (event.key === 'Escape' && !running) {
-        onClose();
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, running, onClose]);
 
   const handleStart = useCallback(async () => {
     if (!candidates.length || running) {
@@ -187,11 +175,17 @@ export default function BatchAnalysisPanel({
         }
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={TITLE_ID}
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+      >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Batch AI</p>
-            <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">批量 AI 分析</h2>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">批量 AI 分析</h2>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               逐条调用 DeepSeek 生成建议标签与理由；只写入 AI 建议，不会覆盖人工标注。
             </p>

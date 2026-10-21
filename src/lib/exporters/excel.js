@@ -4,34 +4,11 @@
  */
 
 import * as XLSX from 'xlsx';
-import { LABELS } from '../constants';
 import { formatDurationLabel } from '../analytics';
-
-const LABEL_NAME_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
-
-// 非「准确」类标签即视为需要关注的问题
-const PROBLEM_LABELS = new Set(LABELS.map((item) => item.value).filter((value) => value !== 'accurate'));
+import { PROBLEM_LABELS, formatLabelList, toLabelArray } from '../labels';
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
-}
-
-function toLabelArray(value) {
-  if (Array.isArray(value)) {
-    return value.filter((item) => typeof item === 'string');
-  }
-
-  if (typeof value === 'string' && value.trim()) {
-    return value.split('|').map((item) => item.trim()).filter(Boolean);
-  }
-
-  return [];
-}
-
-function formatLabelList(labels) {
-  return toLabelArray(labels)
-    .map((label) => LABEL_NAME_MAP.get(label) || label)
-    .join('、');
 }
 
 function getScore(annotation) {

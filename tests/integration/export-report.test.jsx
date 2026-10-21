@@ -331,32 +331,29 @@ describe('D. 关闭与回归', () => {
     expect(within(report).getByText('#001')).toBeInTheDocument();
   });
 
-  it('按 Esc → 当前实现不关闭导出面板（疑似缺陷：任务单期望 Esc 关闭）；关闭按钮仍可关闭', async () => {
+  it('按 Esc → 关闭导出面板（BUG-21 已修复）', async () => {
     const { user } = setupApp();
     await waitForWorkbench();
     await openExportPanel(user);
 
     fireEvent.keyDown(window, { key: 'Escape' });
 
-    // 记录当前行为：导出面板未注册 Esc 处理（批量分析/导入向导均有），按现状如实断言
-    expect(screen.getByRole('heading', EXPORT_HEADING)).toBeInTheDocument();
-
-    await user.click(closeButtons()[0]);
-    expect(screen.queryByRole('heading', EXPORT_HEADING)).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('heading', EXPORT_HEADING)).not.toBeInTheDocument());
   });
 
-  it('面板打开时按数字快捷键 → 底层工作台仍被修改且预览被动刷新（疑似缺陷：模态未隔离全局快捷键）', async () => {
+  it('面板打开时按数字快捷键 → 全局快捷键被暂停，底层标注不被修改（BUG-20 已修复）', async () => {
     const { user } = setupApp();
     await waitForWorkbench();
     await openExportPanel(user);
     expect(within(reportNode()).getByText('已审核').parentElement).toHaveTextContent('0 / 2');
 
-    // 既有全局快捷键：6 = 风险回复。导出面板没有拦截键盘事件
+    // 6 = 风险回复；面板打开期间应被暂停
     fireEvent.keyDown(window, { key: '6' });
+    fireEvent.keyDown(window, { key: '1', altKey: true });
+    fireEvent.keyDown(window, { key: 'Enter' });
 
-    await waitFor(() => expect(readAnnotations()['001'].labels).toEqual(['risky']));
-    // 底层标注被修改后，面板预览数据被动变化
-    expect(within(reportNode()).getByText('已审核').parentElement).toHaveTextContent('1 / 2');
+    expect(readAnnotations()['001']).toBeUndefined();
+    expect(within(reportNode()).getByText('已审核').parentElement).toHaveTextContent('0 / 2');
     expect(screen.getByRole('heading', EXPORT_HEADING)).toBeInTheDocument();
   });
 

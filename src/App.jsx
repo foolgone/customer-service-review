@@ -451,7 +451,9 @@ export default function App() {
     onAnalyze: handleAnalyze,
     onToggleTheme: toggleTheme,
     onToggleLabelShortcut: handleShortcutLabel,
-    onSetScoreShortcut: handleScoreShortcut
+    onSetScoreShortcut: handleScoreShortcut,
+    // BUG-20：任一模态面板打开时暂停全局快捷键
+    enabled: !isImportOpen && !isBatchOpen && !isExportOpen
   });
 
   if (loading) {

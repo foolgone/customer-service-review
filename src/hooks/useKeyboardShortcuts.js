@@ -15,10 +15,16 @@ export function useKeyboardShortcuts({
   onAnalyze,
   onToggleTheme,
   onToggleLabelShortcut,
-  onSetScoreShortcut
+  onSetScoreShortcut,
+  enabled = true
 }) {
   useEffect(() => {
     function handleKeyDown(event) {
+      // BUG-20：模态面板打开时暂停全局快捷键，避免在查看/导出过程中误改数据
+      if (!enabled) {
+        return;
+      }
+
       const key = event.key.toLowerCase();
       const editable = isEditableTarget(event.target);
 
@@ -74,5 +80,5 @@ export function useKeyboardShortcuts({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onAnalyze, onNext, onSave, onSetScoreShortcut, onToggleLabelShortcut, onToggleTheme]);
+  }, [onAnalyze, onNext, onSave, onSetScoreShortcut, onToggleLabelShortcut, onToggleTheme, enabled]);
 }

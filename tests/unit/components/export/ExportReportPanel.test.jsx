@@ -450,14 +450,12 @@ describe('ExportReportPanel 关闭与连续操作', () => {
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('Esc 不关闭面板（当前实现仅支持关闭按钮与遮罩点击）', () => {
+  it('Esc 关闭面板（BUG-21 已修复）', () => {
     const { props } = renderPanel();
 
     fireEvent.keyDown(window, { key: 'Escape' });
-    fireEvent.keyDown(document, { key: 'Escape' });
 
-    expect(props.onClose).not.toHaveBeenCalled();
-    expect(screen.getByRole('heading', { name: '导出质检报告' })).toBeInTheDocument();
+    expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 
   it('连续导出 Excel → PDF → 提示与 busy 状态正确切换', async () => {

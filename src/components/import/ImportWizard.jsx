@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { parseFile, reMapCSVData, reMapExcelData, validateFile } from '../../lib/parsers';
 import DataPreview from './DataPreview';
 import FileUploader from './FileUploader';
+
+const TITLE_ID = 'import-wizard-title';
 
 const STEP_ITEMS = [
   { key: 'upload', label: '选择文件' },
@@ -38,6 +41,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
   const [result, setResult] = useState(null);
   const [mapping, setMapping] = useState(null);
   const [importing, setImporting] = useState(false);
+  const dialogRef = useDialogA11y({ open, onClose, disableClose: importing });
 
   const format = getFormatKey(file?.name);
   const needsMapping = MAPPING_FORMATS.has(format);
@@ -62,22 +66,6 @@ export default function ImportWizard({ open, onClose, onImport }) {
     setMapping(null);
     setImporting(false);
   }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    function handleKeyDown(event) {
-      if (event.key === 'Escape' && !importing) {
-        onClose();
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, importing, onClose]);
 
   if (!open) {
     return null;
@@ -178,12 +166,18 @@ export default function ImportWizard({ open, onClose, onImport }) {
         }
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={TITLE_ID}
+        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+      >
         <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Import</p>
-              <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导入对话数据</h2>
+              <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导入对话数据</h2>
               <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
                 支持 JSON / CSV / Excel，导入后直接替换当前待审核列表。
               </p>

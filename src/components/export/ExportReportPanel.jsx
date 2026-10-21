@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
-import { LABELS } from '../../lib/constants';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
+import { PROBLEM_LABELS, formatLabelList, toLabelArray } from '../../lib/labels';
 
-const LABEL_NAME_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
+const TITLE_ID = 'export-report-title';
+const EXPORT_TIMEOUT_MS = 90000;
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -11,13 +13,28 @@ function formatDate(date = new Date()) {
   return date.toLocaleString('zh-CN', { hour12: false });
 }
 
-const PROBLEM_LABEL_VALUES = ['off_topic', 'hallucination', 'impolite', 'incomplete', 'risky'];
+// BUG-23：弱网下动态 import / 截图可能长时间挂起，加超时避免用户被困在面板里
+function withTimeout(promise, ms, message) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
 
 function getProblemConversations(conversations, annotations, limit = 10) {
   return conversations
     .filter((conversation) => {
-      const labels = annotations?.[conversation.id]?.labels;
-      return Array.isArray(labels) && labels.some((label) => PROBLEM_LABEL_VALUES.includes(label));
+      const labels = toLabelArray(annotations?.[conversation.id]?.labels);
+      return labels.some((label) => PROBLEM_LABELS.has(label));
     })
     .slice(0, limit)
     .map((conversation) => {
@@ -25,7 +42,7 @@ function getProblemConversations(conversations, annotations, limit = 10) {
       return {
         id: conversation.id,
         user: getConversationText(conversation, 'user'),
-        labels: Array.isArray(annotation.labels) ? annotation.labels.map((label) => LABEL_NAME_MAP.get(label) || label) : [],
+        labels: toLabelArray(annotation.labels),
         score: Number(annotation.score) || 0,
         comment: annotation.comment || ''
       };
@@ -36,6 +53,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
   const reportRef = useRef(null);
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const dialogRef = useDialogA11y({ open, onClose, disableClose: Boolean(busy) });
 
   if (!open) {
     return null;
@@ -66,7 +84,11 @@ export default function ExportReportPanel({ open, conversations = [], annotation
       setMessage({ type: 'info', text: '正在生成 PDF...' });
       // html2canvas / jspdf 体积较大，点击导出时再加载
       const { exportReportToPdf, getPdfFileName } = await import('../../lib/exporters/pdf');
-      await exportReportToPdf(reportRef.current, { fileName: getPdfFileName() });
+      await withTimeout(
+        exportReportToPdf(reportRef.current, { fileName: getPdfFileName() }),
+        EXPORT_TIMEOUT_MS,
+        'PDF 生成超时，请重试或减少数据量'
+      );
       setMessage({ type: 'success', text: 'PDF 已导出' });
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'PDF 导出失败' });
@@ -84,11 +106,17 @@ export default function ExportReportPanel({ open, conversations = [], annotation
         }
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={TITLE_ID}
+        className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+      >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Export</p>
-            <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导出质检报告</h2>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导出质检报告</h2>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Excel 含明细 / 统计 / 问题对话三个工作表；PDF 为当前预览的报告版式。
             </p>
@@ -175,7 +203,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                       </div>
                       <p className="mt-1 line-clamp-2 text-slate-600">{item.user}</p>
                       <p className="mt-1 text-slate-500">
-                        标签：{item.labels.join('、') || '-'}
+                        标签：{formatLabelList(item.labels) || '-'}
                         {item.comment ? ` ｜ 备注：${item.comment}` : ''}
                       </p>
                     </div>
