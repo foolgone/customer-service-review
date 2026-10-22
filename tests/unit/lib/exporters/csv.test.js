@@ -1,11 +1,15 @@
 /**
- * src/lib/csv.js 单元测试
- * 覆盖：CSV 行构造（默认标注/评分兜底/标签拼接）、完整导出（BOM、表头、转义、
- *      文件名、对象 URL 与 a 标签点击/释放）
+ * src/lib/exporters/csv.js 单元测试
+ * 覆盖：CSV 行构造（默认标注 / 评分兜底 / 标签拼接 / 时间回退）、完整导出
+ *      （BOM、表头、转义、文件名、对象 URL 与 a 标签点击/释放）、文件名规则
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { conversationsToCsvRows, exportConversationsToCsv } from '../../../src/lib/csv.js';
-import { DEFAULT_ANNOTATION } from '../../../src/lib/constants.js';
+import {
+  conversationsToCsvRows,
+  exportConversationsToCsv,
+  getCsvFileName
+} from '../../../../src/lib/exporters/csv.js';
+import { DEFAULT_ANNOTATION } from '../../../../src/lib/constants.js';
 
 const conversations = [
   {
@@ -73,6 +77,14 @@ async function readBlobWithBom(blob) {
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe('getCsvFileName', () => {
+  it('文件名为 customer-service-review-YYYY-MM-DD.csv', () => {
+    const fixed = new Date('2026-10-22T08:00:00.000Z');
+    expect(getCsvFileName(fixed)).toBe('customer-service-review-2026-10-22.csv');
+    expect(getCsvFileName()).toMatch(/^customer-service-review-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
 });
 
 describe('conversationsToCsvRows', () => {
@@ -203,6 +215,14 @@ describe('exportConversationsToCsv', () => {
     expect(env.revokeSpy).toHaveBeenCalledWith('blob:csv-url');
     expect(env.createSpy).toHaveBeenCalledTimes(1);
     expect(link.isConnected).toBe(false); // 点击后已移出 DOM
+  });
+
+  it('可传入自定义文件名（供导出面板复用）', () => {
+    const env = stubDownloadEnv();
+
+    exportConversationsToCsv(conversations, annotations, 'custom.csv');
+
+    expect(env.anchors[0].download).toBe('custom.csv');
   });
 
   it('空对话列表 → 只有表头一行', async () => {

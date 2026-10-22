@@ -1,4 +1,10 @@
-import { DEEPSEEK_DEFAULT_MODEL, DEEPSEEK_ENDPOINT, LABELS } from './constants';
+/**
+ * DeepSeek 提示词与响应解析（纯函数）
+ *
+ * 真正的请求发送已统一到 lib/ai/providers 的 Provider 抽象；
+ * 这里只保留与模型无关的「构造提示词 / 解析返回」逻辑，供 Provider 复用。
+ */
+import { LABELS } from './constants';
 
 const ALLOWED_LABELS = new Set(LABELS.map((item) => item.value));
 
@@ -64,46 +70,4 @@ export function parseDeepSeekResponse(content) {
     labels,
     reason
   };
-}
-
-export async function analyzeWithDeepSeek({ apiKey, userContent, assistantContent, model = DEEPSEEK_DEFAULT_MODEL }) {
-  if (!apiKey) {
-    throw new Error('请先配置 DeepSeek API Key');
-  }
-
-  const response = await fetch(DEEPSEEK_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0,
-      messages: [
-        {
-          role: 'system',
-          content: '你是客服质检专家。只输出 JSON，不要输出多余解释。'
-        },
-        {
-          role: 'user',
-          content: buildDeepSeekPrompt(userContent, assistantContent)
-        }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepSeek 请求失败：${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-  const content = data?.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error('DeepSeek 返回内容为空');
-  }
-
-  return parseDeepSeekResponse(content);
 }

@@ -48,7 +48,7 @@ npm run test:coverage    # 全量测试 + 覆盖率报告（coverage/index.html�
 
 测试文件的组织方式：
 
-> 当前状态：**62 个测试文件 / 896 条用例全部通过**，行覆盖率 **99.11%**、分支覆盖率 **96.89%**、函数覆盖 **99.63%**（2026-10-22，含前端性能优化、可访问性修复与主题持久化回归）。
+> 当前状态：**63 个测试文件 / 892 条用例全部通过**，行覆盖率 **99.07%**、分支覆盖率 **96.82%**、函数覆盖 **99.63%**（2026-10-22，含前端性能优化、可访问性修复与主题持久化回归）。
 > 详细用例清单见 `docx/测试用例文档.md`，执行结果见 `docx/测试报告.md`。
 
 ```
@@ -141,28 +141,25 @@ customer-service-review/
 │       └── conversations.json          # 示例对话数据
 ├── src/
 │   ├── components/                     # React 组件
-│   │   ├── common/                    # 通用组件
-│   │   ├── import/                    # 数据导入
-│   │   ├── review/                    # 质检标注
-│   │   ├── analysis/                  # AI 分析
-│   │   ├── dashboard/                 # 统计分析
-│   │   ├── export/                    # 报告导出
-│   │   └── settings/                  # 设置
-│   ├── hooks/                          # 自定义 Hooks
+│   │   ├── common/                     # 通用组件（ErrorBoundary）
+│   │   ├── import/                     # 数据导入（FileUploader / DataPreview / ImportWizard）
+│   │   ├── ai/                         # 批量 AI 分析面板
+│   │   ├── data/                       # 数据管理页
+│   │   ├── export/                     # 报告导出面板
+│   │   ├── settings/                   # 设置面板
+│   │   └── *.jsx                       # 主界面组件（ActionBar / AnalysisPanel / ChatBubble / ConversationPanel / Dashboard / LabelSelector / ScoreSelector）
+│   ├── hooks/                          # 自定义 Hooks（useTheme / useKeyboardShortcuts / useDialogA11y）
 │   ├── lib/                            # 核心库
-│   │   ├── parsers/                   # 数据解析器
-│   │   │   ├── json.js               # JSON 解析
-│   │   │   ├── csv.js                # CSV 解析
-│   │   │   ├── excel.js              # Excel 解析
-│   │   │   ├── validator.js          # 数据验证
-│   │   │   └── index.js              # 统一导出
-│   │   ├── exporters/                 # 数据导出器
-│   │   ├── ai/                        # AI 服务
-│   │   ├── constants.js               # 常量定义
-│   │   ├── utils.js                   # 工具函数
-│   │   ├── storage.js                 # 本地存储
-│   │   └── analytics.js               # 数据分析
-│   ├── styles/                         # 样式文件
+│   │   ├── parsers/                    # 数据解析器（json / csv / excel / validator）
+│   │   ├── exporters/                  # 数据导出器（csv / excel / pdf / pdf-layout）
+│   │   ├── ai/                         # AI 服务（providers / batch / analyze）
+│   │   ├── constants.js                # 常量定义
+│   │   ├── utils.js                    # 工具函数
+│   │   ├── storage.js                  # 本地存储
+│   │   ├── analytics.js                # 数据分析
+│   │   ├── deepseek.js                 # DeepSeek 提示词与响应解析（纯函数）
+│   │   └── performance.js              # 图表动画配置
+│   ├── index.css                       # 全局样式（Tailwind）
 │   ├── App.jsx                         # 应用主组件
 │   └── main.jsx                        # 应用入口
 ├── docx/                               # 项目文档
@@ -225,14 +222,14 @@ customer-service-review/
 - [x] 全局错误边界（chunk 加载失败可恢复，不再整页白屏）
 - [x] 前端性能优化（Dashboard 懒加载、图表动画关闭，主包 596 KB → 190 KB / gzip 179 → 60 KB，CLS 0）
 - [x] 可访问性达标（Lighthouse Accessibility 100 / Best Practices 100）
-- [x] 测试工程（Vitest + React Testing Library：896 条用例，行覆盖 99.11%）
+- [x] 测试工程（Vitest + React Testing Library：892 条用例，行覆盖 99.07%）
 - [x] E2E 测试（Playwright：15 个用例，覆盖导入/标注/导出/AI/主题持久化真实浏览器流程）
 - [x] CI 门禁（GitHub Actions：push/PR 自动跑单测 + 覆盖率阈值 + Playwright E2E）
 - [x] 部署上线（GitHub Pages 自动部署：https://foolgone.github.io/customer-service-review/ ）
 - [x] 用户手册（面向质检员的操作说明：`docx/用户手册.md`）
+- [x] 技术债收口（单条 AI 分析统一到 `lib/ai/providers`、CSV 导出并入 `lib/exporters`、清理未引用的性能常量）
 
 ### 📅 计划中
-- [ ] 技术债收口（单条 AI 分析统一到 Provider 抽象、CSV 导出并入 `lib/exporters`）
 - [ ] 部署平台迁移（Vercel / Netlify：immutable 长缓存 + PR 预览环境）
 - [ ] 其他服务商 AI Provider 接入（OpenAI / Claude）
 

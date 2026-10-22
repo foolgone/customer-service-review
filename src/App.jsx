@@ -4,10 +4,10 @@ import AnalysisPanel from './components/AnalysisPanel';
 import ConversationPanel from './components/ConversationPanel';
 import LabelSelector from './components/LabelSelector';
 import ScoreSelector from './components/ScoreSelector';
+import { analyzeConversation } from './lib/ai';
 import { buildAnalytics, isHumanReviewed } from './lib/analytics';
 import { DEFAULT_ANNOTATION, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
-import { exportConversationsToCsv } from './lib/csv';
-import { analyzeWithDeepSeek } from './lib/deepseek';
+import { exportConversationsToCsv } from './lib/exporters/csv';
 import { loadSettings, saveSettings } from './lib/settings';
 import { addImportHistory, loadAnnotations, normalizeAnnotation, readStoredTheme, saveAnnotations } from './lib/storage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -335,7 +335,7 @@ export default function App() {
       setIsAnalyzing(true);
       setAnalysisState({ status: 'analyzing', reason: '', labels: [], error: '' });
 
-      const result = await analyzeWithDeepSeek({
+      const result = await analyzeConversation({
         apiKey,
         userContent,
         assistantContent,

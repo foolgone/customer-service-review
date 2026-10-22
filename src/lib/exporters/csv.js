@@ -1,8 +1,18 @@
-import { DEFAULT_ANNOTATION } from './constants';
+/**
+ * CSV 明细导出
+ * 与 Excel / PDF 一起归入 lib/exporters，统一「导出」职责。
+ * 列：id, user, assistant, labels, score, comment, ai_labels, ai_reason, reviewed_at, duration_ms
+ */
+
+import { DEFAULT_ANNOTATION } from '../constants';
 
 function escapeCsvValue(value) {
   const text = String(value ?? '');
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+export function getCsvFileName(date = new Date()) {
+  return `customer-service-review-${date.toISOString().slice(0, 10)}.csv`;
 }
 
 export function conversationsToCsvRows(conversations, annotations) {
@@ -26,7 +36,7 @@ export function conversationsToCsvRows(conversations, annotations) {
   });
 }
 
-export function exportConversationsToCsv(conversations, annotations) {
+export function exportConversationsToCsv(conversations, annotations, fileName = getCsvFileName()) {
   const header = ['id', 'user', 'assistant', 'labels', 'score', 'comment', 'ai_labels', 'ai_reason', 'reviewed_at', 'duration_ms'];
   const rows = conversationsToCsvRows(conversations, annotations).map((row) => row.map(escapeCsvValue).join(','));
   const csv = ['\ufeff', [header.map(escapeCsvValue).join(','), ...rows].join('\n')].join('');
@@ -34,7 +44,7 @@ export function exportConversationsToCsv(conversations, annotations) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `customer-service-review-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   link.remove();

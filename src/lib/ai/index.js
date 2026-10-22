@@ -15,3 +15,5 @@ export {
   listProviders,
   AI_PROVIDERS
 } from './providers';
+
+export { analyzeConversation } from './analyze';
