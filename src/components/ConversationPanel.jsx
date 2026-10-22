@@ -9,10 +9,10 @@ export default function ConversationPanel({ conversation, currentIndex, totalCou
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-300">Conversation</p>
           <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">聊天式对话审查</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">支持多轮对话、左右气泡和滚动浏览，更贴近真实客服系统。</p>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">支持多轮对话、左右气泡和滚动浏览，更贴近真实客服系统。</p>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">#{conversation?.id || '-'}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">第 {currentIndex + 1} 条</span>
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">共 {totalCount} 条</span>
@@ -27,7 +27,7 @@ export default function ConversationPanel({ conversation, currentIndex, totalCou
               <ChatBubble key={`${conversation?.id || 'turn'}-${index}`} turn={turn} index={index} turnIndex={Math.floor(index / 2)} />
             ))
           ) : (
-            <div className="rounded-3xl bg-white/80 p-8 text-center text-sm text-slate-500 dark:bg-slate-950/60 dark:text-slate-400">
+            <div className="rounded-3xl bg-white/80 p-8 text-center text-sm text-slate-600 dark:bg-slate-950/60 dark:text-slate-400">
               暂无对话消息
             </div>
           )}

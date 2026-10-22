@@ -36,7 +36,7 @@ function StatusBadge({ reviewed, hasAi }) {
     <div className="flex flex-wrap gap-1">
       <span
         className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-          reviewed ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200/70 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+          reviewed ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200/70 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
         }`}
       >
         {reviewed ? '已审核' : '未审核'}
@@ -130,7 +130,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Data</p>
             <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">数据管理</h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">筛选/搜索当前数据集，查看导入历史，并跳转到指定对话。</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">筛选/搜索当前数据集，查看导入历史，并跳转到指定对话。</p>
           </div>
           <button
             type="button"
@@ -152,7 +152,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
             ].map((item) => (
               <div key={item.label} className="rounded-2xl bg-slate-100 px-3 py-2 text-center dark:bg-slate-950/60">
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.value}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{item.label}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{item.label}</p>
               </div>
             ))}
           </div>
@@ -194,7 +194,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400">标签</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">标签</span>
               {LABELS.map((label) => {
                 const selected = filters.labels.includes(label.value);
                 return (
@@ -216,7 +216,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400">评分</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">评分</span>
               {[5, 4, 3, 2, 1].map((score) => {
                 const selected = filters.scores.includes(score);
                 return (
@@ -241,7 +241,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
           <div>
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">筛选结果</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 命中 {filtered.length} / {stats.total} 条
               </p>
             </div>
@@ -255,12 +255,12 @@ export default function DataManagerPanel({ open, conversations = [], annotations
               <table aria-label="对话筛选结果" className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
                 <thead className="bg-slate-50 dark:bg-slate-950/60">
                   <tr>
-                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">ID</th>
-                    <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">用户消息</th>
-                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">标签</th>
-                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">评分</th>
-                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">状态</th>
-                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">操作</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">ID</th>
+                    <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">用户消息</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">标签</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">评分</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">状态</th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
@@ -297,7 +297,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                     })
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-3 py-8 text-center text-slate-500 dark:text-slate-400">
+                      <td colSpan={6} className="px-3 py-8 text-center text-slate-600 dark:text-slate-400">
                         没有匹配的对话，试试调整筛选条件
                       </td>
                     </tr>
@@ -306,7 +306,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
               </table>
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
               <span>
                 第 {paged.page} / {paged.pageCount} 页
               </span>
@@ -334,7 +334,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
           <section className="border-t border-slate-200 pt-4 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">导入历史</h3>
-              <span className="text-xs text-slate-500 dark:text-slate-400">最近 {importHistory.length} 条</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">最近 {importHistory.length} 条</span>
             </div>
             {importHistory.length ? (
               <ul className="mt-2 space-y-2 text-xs">
@@ -344,14 +344,14 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                     className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-50 px-3 py-2 dark:bg-slate-950/60"
                   >
                     <span className="min-w-0 truncate font-medium text-slate-700 dark:text-slate-200">{item.fileName}</span>
-                    <span className="shrink-0 text-slate-500 dark:text-slate-400">
+                    <span className="shrink-0 text-slate-600 dark:text-slate-400">
                       {item.format} · 有效 {item.valid}/{item.total} · {formatHistoryTime(item.importedAt)}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">暂无导入记录</p>
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">暂无导入记录</p>
             )}
           </section>
         </div>
@@ -363,7 +363,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                 ? 'text-rose-600 dark:text-rose-300'
                 : message.type === 'success'
                   ? 'text-emerald-600 dark:text-emerald-300'
-                  : 'text-slate-500 dark:text-slate-400'
+                  : 'text-slate-600 dark:text-slate-400'
             }`}
           >
             {message.text || `导出内容为当前筛选结果（${filtered.length} 条）`}

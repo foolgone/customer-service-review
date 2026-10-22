@@ -19,7 +19,7 @@ export default function LabelSelector({ selectedLabels, onToggleLabel }) {
           >
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold">{item.label}</p>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+              <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {item.shortcut}
               </span>
               <span

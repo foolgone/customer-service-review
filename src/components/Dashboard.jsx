@@ -31,9 +31,9 @@ function getLabelName(value) {
 const MetricCard = memo(function MetricCard({ label, value, hint }) {
   return (
     <div className="rounded-[24px] border border-white/60 bg-white/80 p-4 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-600 dark:text-slate-400">{label}</p>
       <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{value}</p>
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+      <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">{hint}</p>
     </div>
   );
 });
@@ -45,7 +45,7 @@ const TrendChart = memo(function TrendChart({ data, isDark, todayReviewCount }) 
       <div className="flex items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-white">最近 7 天审核趋势</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">今日审核量：{todayReviewCount}</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">今日审核量：{todayReviewCount}</p>
         </div>
         <div className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-300">
           今日 {todayReviewCount}
@@ -178,10 +178,10 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-300">Dashboard</p>
           <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">企业级审核概览</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">把审核效率、标签趋势、评分分布和 AI 采纳率放在同一层级观察。</p>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">把审核效率、标签趋势、评分分布和 AI 采纳率放在同一层级观察。</p>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">{isDark ? '深色模式' : '浅色模式'}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">{hasApiKey ? 'DeepSeek 已接入' : 'DeepSeek 未配置'}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">{reviewerStatus.status}</span>
@@ -216,7 +216,7 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-slate-900 dark:text-white">当前审核员状态</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">企业后台工作台 · 角色状态卡</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">企业后台工作台 · 角色状态卡</p>
               </div>
               <div className="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.18)]" />
             </div>
@@ -228,10 +228,10 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
                 </div>
                 <div>
                   <p className="font-semibold text-slate-900 dark:text-white">{reviewerStatus.name}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{reviewerStatus.team}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{reviewerStatus.team}</p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-400">
                 <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-800">状态：{reviewerStatus.status}</div>
                 <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-800">API：{hasApiKey ? '已接入' : '未接入'}</div>
                 <div className="rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-800">评分均值：{analytics.avgScore || 'N/A'}</div>
@@ -245,7 +245,7 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
             <div className="mt-4 space-y-3">
               {analytics.historicalLabels.map((item) => (
                 <div key={item.name}>
-                  <div className="mb-1 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mb-1 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
                     <span>{item.name}</span>
                     <span>{item.value} 次 · {item.rate}%</span>
                   </div>
@@ -266,7 +266,7 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">#{record.id}</p>
-                        <p className="mt-1 max-h-12 overflow-hidden text-xs leading-6 text-slate-500 dark:text-slate-400">{record.preview}</p>
+                        <p className="mt-1 max-h-12 overflow-hidden text-xs leading-6 text-slate-600 dark:text-slate-400">{record.preview}</p>
                       </div>
                       <div className="rounded-full bg-cyan-500/10 px-2 py-1 text-[10px] font-medium text-cyan-700 dark:text-cyan-300">
                         {record.score} 分
@@ -280,11 +280,11 @@ export default memo(function Dashboard({ analytics, reviewerStatus, hasApiKey, i
                         </span>
                       ))}
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">{record.timeLabel} · {record.durationLabel}</p>
+                    <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">{record.timeLabel} · {record.durationLabel}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">暂无审核记录</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">暂无审核记录</p>
               )}
             </div>
           </div>

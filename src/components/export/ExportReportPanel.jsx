@@ -117,7 +117,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Export</p>
             <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导出质检报告</h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               Excel 含明细 / 统计 / 问题对话三个工作表；PDF 为当前预览的报告版式。
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600">Customer Review QA</p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight">智能客服对话质检报告</h1>
-                <p className="mt-1 text-xs text-slate-500">生成时间：{formatDate()}</p>
+                <p className="mt-1 text-xs text-slate-600">生成时间：{formatDate()}</p>
               </div>
               <div className="rounded-xl bg-slate-900 px-3 py-2 text-right text-white">
                 <p className="text-[10px] uppercase tracking-widest text-white/60">总对话数</p>
@@ -154,14 +154,14 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                 { label: '平均评分', value: Number(analytics.avgScore) || 0 }
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-slate-200 px-3 py-3">
-                  <p className="text-[11px] text-slate-500">{item.label}</p>
+                  <p className="text-[11px] text-slate-600">{item.label}</p>
                   <p className="mt-1 text-lg font-semibold">{item.value}</p>
                 </div>
               ))}
             </div>
 
             <div className="mt-5">
-              <div className="flex items-center justify-between text-xs text-slate-500">
+              <div className="flex items-center justify-between text-xs text-slate-600">
                 <span>审核完成率</span>
                 <span>{completionRate}%</span>
               </div>
@@ -182,7 +182,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                         style={{ width: `${Math.max(Number(item.rate) || 0, item.value ? 6 : 0)}%` }}
                       />
                     </div>
-                    <span className="w-16 shrink-0 text-right text-slate-500">
+                    <span className="w-16 shrink-0 text-right text-slate-600">
                       {Number(item.value) || 0} 次 · {Number(item.rate) || 0}%
                     </span>
                   </div>
@@ -199,10 +199,10 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                     <div key={item.id} className="py-2 text-xs">
                       <div className="flex items-start justify-between gap-4">
                         <p className="font-medium text-slate-700">#{item.id}</p>
-                        <p className="shrink-0 text-slate-500">{item.score} 分</p>
+                        <p className="shrink-0 text-slate-600">{item.score} 分</p>
                       </div>
                       <p className="mt-1 line-clamp-2 text-slate-600">{item.user}</p>
-                      <p className="mt-1 text-slate-500">
+                      <p className="mt-1 text-slate-600">
                         标签：{formatLabelList(item.labels) || '-'}
                         {item.comment ? ` ｜ 备注：${item.comment}` : ''}
                       </p>
@@ -229,13 +229,13 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                     ? 'text-rose-600 dark:text-rose-300'
                     : message.type === 'success'
                       ? 'text-emerald-600 dark:text-emerald-300'
-                      : 'text-slate-500 dark:text-slate-400'
+                      : 'text-slate-600 dark:text-slate-400'
                 }
               >
                 {message.text}
               </span>
             ) : (
-              <span className="text-slate-400 dark:text-slate-500">导出内容包含当前筛选后的全部对话与标注</span>
+              <span className="text-slate-400 dark:text-slate-600">导出内容包含当前筛选后的全部对话与标注</span>
             )}
           </div>
 

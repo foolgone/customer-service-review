@@ -21,7 +21,7 @@ export default function ActionBar({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={onImport} className="primary-button bg-cyan-500 text-white hover:bg-cyan-600">
+        <button type="button" onClick={onImport} className="primary-button bg-cyan-700 text-white hover:bg-cyan-800">
           导入数据
         </button>
         <button
@@ -37,7 +37,7 @@ export default function ActionBar({
         <button type="button" onClick={onNext} disabled={!canNext} className="primary-button bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
           下一条
         </button>
-        <button type="button" onClick={onSave} disabled={isSaving} className="primary-button bg-cyan-500 text-white hover:bg-cyan-600">
+        <button type="button" onClick={onSave} disabled={isSaving} className="primary-button bg-cyan-700 text-white hover:bg-cyan-800">
           {isSaving ? '保存中...' : '保存'}
         </button>
         <button type="button" onClick={onExport} className="primary-button bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
@@ -73,7 +73,7 @@ export default function ActionBar({
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">快捷键</span>
         <span>Enter 下一条</span>
         <span>Ctrl+S 保存</span>

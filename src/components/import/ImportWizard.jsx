@@ -178,7 +178,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Import</p>
               <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导入对话数据</h2>
-              <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 truncate text-xs text-slate-600 dark:text-slate-400">
                 支持 JSON / CSV / Excel，导入后直接替换当前待审核列表。
               </p>
             </div>
@@ -199,12 +199,12 @@ export default function ImportWizard({ open, onClose, onImport }) {
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${
                     index <= stepIndex
                       ? 'bg-cyan-500 text-white'
-                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                   }`}
                 >
                   {index + 1}
                 </span>
-                <span className={index === stepIndex ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}>
+                <span className={index === stepIndex ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}>
                   {item.label}
                 </span>
                 {index < STEP_ITEMS.length - 1 ? <span className="text-slate-300 dark:text-slate-600">›</span> : null}
@@ -218,9 +218,9 @@ export default function ImportWizard({ open, onClose, onImport }) {
             <div className="space-y-4">
               <FileUploader file={file} error={error} disabled={parsing} onSelectFile={handleSelectFile} />
               {parsing ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">正在解析文件...</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">正在解析文件...</p>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   选择文件后会自动解析并进入预览；文件只在本机浏览器内解析，不会上传到服务器。
                 </p>
               )}
@@ -246,19 +246,19 @@ export default function ImportWizard({ open, onClose, onImport }) {
               <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
                 <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
                   <div className="min-w-0">
-                    <dt className="text-xs text-slate-500 dark:text-slate-400">文件</dt>
+                    <dt className="text-xs text-slate-600 dark:text-slate-400">文件</dt>
                     <dd className="mt-1 truncate font-medium text-slate-900 dark:text-white" title={file?.name}>{file?.name}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-slate-500 dark:text-slate-400">格式</dt>
+                    <dt className="text-xs text-slate-600 dark:text-slate-400">格式</dt>
                     <dd className="mt-1 font-medium text-slate-900 dark:text-white">{formatLabel}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-slate-500 dark:text-slate-400">有效对话</dt>
+                    <dt className="text-xs text-slate-600 dark:text-slate-400">有效对话</dt>
                     <dd className="mt-1 font-medium text-slate-900 dark:text-white">{stats.valid} 条</dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-slate-500 dark:text-slate-400">跳过</dt>
+                    <dt className="text-xs text-slate-600 dark:text-slate-400">跳过</dt>
                     <dd className="mt-1 font-medium text-slate-900 dark:text-white">{stats.invalid + stats.dropped} 条</dd>
                   </div>
                 </dl>
@@ -294,7 +294,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
 
           <div className="flex items-center gap-2">
             {step === 'upload' ? (
-              <span className="text-xs text-slate-500 dark:text-slate-400">{parsing ? '解析中...' : '等待选择文件'}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{parsing ? '解析中...' : '等待选择文件'}</span>
             ) : null}
 
             {step === 'preview' ? (

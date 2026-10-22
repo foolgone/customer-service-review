@@ -52,7 +52,7 @@ export default function FileUploader({ file, error, disabled = false, onSelectFi
           📁
         </p>
         <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-200">拖拽文件到此处，或点击选择文件</p>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">支持 .json .csv .xlsx .xls ｜ 单个文件最大 10MB</p>
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">支持 .json .csv .xlsx .xls ｜ 单个文件最大 10MB</p>
         <input
           ref={inputRef}
           type="file"
@@ -72,7 +72,7 @@ export default function FileUploader({ file, error, disabled = false, onSelectFi
       {file ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-950/60">
           <span className="min-w-0 truncate text-slate-700 dark:text-slate-200">✓ {file.name}</span>
-          <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">{formatFileSize(file.size)}</span>
+          <span className="shrink-0 text-xs text-slate-600 dark:text-slate-400">{formatFileSize(file.size)}</span>
         </div>
       ) : null}
 

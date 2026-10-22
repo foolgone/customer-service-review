@@ -148,7 +148,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Settings</p>
             <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">设置</h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">AI 服务配置与本地数据管理。</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">AI 服务配置与本地数据管理。</p>
           </div>
           <button
             type="button"
@@ -163,7 +163,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
           <section>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">AI 服务</h3>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 API Key {apiKeyStatus}
               </span>
             </div>
@@ -235,7 +235,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
 
           <section className="border-t border-slate-200 pt-5 dark:border-slate-800">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white">数据管理</h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">标注与配置都在本机浏览器，可导出备份或恢复。</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">标注与配置都在本机浏览器，可导出备份或恢复。</p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -268,10 +268,10 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
               />
             </div>
 
-            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">
               当前配置版本：{storedConfig?.autoSave ? '自动保存开启' : '自动保存关闭'} ｜ 导入历史 {importHistoryCount} 条
             </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">备份只包含标注、主题与 AI 配置（不含 API Key）</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">备份只包含标注、主题与 AI 配置（不含 API Key）</p>
           </section>
         </div>
 
@@ -282,7 +282,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
                 ? 'text-rose-600 dark:text-rose-300'
                 : message.type === 'success'
                   ? 'text-emerald-600 dark:text-emerald-300'
-                  : 'text-slate-400 dark:text-slate-500'
+                  : 'text-slate-400 dark:text-slate-600'
             }`}
           >
             {message.text || '修改后点击「保存设置」生效'}

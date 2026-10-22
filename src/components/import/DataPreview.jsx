@@ -24,7 +24,7 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <div className="rounded-2xl bg-slate-100 px-3 py-2 text-center dark:bg-slate-950/60">
           <p className="text-lg font-semibold text-slate-900 dark:text-white">{stats.total}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">总行数</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">总行数</p>
         </div>
         <div className="rounded-2xl bg-emerald-500/10 px-3 py-2 text-center">
           <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{stats.valid}</p>
@@ -43,7 +43,7 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
       {needsMapping ? (
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-white">字段映射</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
             把文件里的列对应到系统字段，已按列名自动识别，可手动调整。
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -71,15 +71,15 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
       <div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-900 dark:text-white">数据预览</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">最多显示前 10 条</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">最多显示前 10 条</p>
         </div>
         <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
           <table className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
             <thead className="bg-slate-50 dark:bg-slate-950/60">
               <tr>
-                <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-500 dark:text-slate-400">ID</th>
-                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">用户消息</th>
-                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">客服回复</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">ID</th>
+                <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">用户消息</th>
+                <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">客服回复</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
@@ -97,7 +97,7 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="px-3 py-8 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={3} className="px-3 py-8 text-center text-slate-600 dark:text-slate-400">
                     暂无可预览的数据，请检查文件内容或字段映射
                   </td>
                 </tr>

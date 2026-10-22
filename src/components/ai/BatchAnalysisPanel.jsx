@@ -187,7 +187,7 @@ export default function BatchAnalysisPanel({
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Batch AI</p>
             <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">批量 AI 分析</h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               逐条调用 DeepSeek 生成建议标签与理由；只写入 AI 建议，不会覆盖人工标注。
             </p>
           </div>
@@ -220,7 +220,7 @@ export default function BatchAnalysisPanel({
                     }`}
                   >
                     <p className="text-sm font-semibold">{option.label}</p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{scopeCounts[option.value]} 条</p>
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{scopeCounts[option.value]} 条</p>
                   </button>
                 );
               })}
@@ -244,7 +244,7 @@ export default function BatchAnalysisPanel({
               </select>
             </label>
 
-            <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs text-slate-500 dark:bg-slate-950/60 dark:text-slate-400">
+            <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs text-slate-600 dark:bg-slate-950/60 dark:text-slate-400">
               本次将分析 <span className="font-semibold text-slate-900 dark:text-white">{candidates.length}</span> 条 · 约消耗 {candidates.length} 次 API 调用
             </div>
           </div>
@@ -252,12 +252,12 @@ export default function BatchAnalysisPanel({
           <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">{summaryText}</p>
-              <p className="shrink-0 text-xs text-slate-500 dark:text-slate-400">{percent}%</p>
+              <p className="shrink-0 text-xs text-slate-600 dark:text-slate-400">{percent}%</p>
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
               <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-500 transition-all" style={{ width: `${percent}%` }} />
             </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
               <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-700 dark:text-emerald-300">成功 {progress.success}</span>
               <span className="rounded-full bg-rose-500/10 px-3 py-1 text-rose-700 dark:text-rose-300">失败 {progress.failed}</span>
               <span className="rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800">总计 {progress.total || candidates.length}</span>
@@ -282,7 +282,7 @@ export default function BatchAnalysisPanel({
             </details>
           ) : null}
 
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             提示：批量分析逐条请求；取消后已完成的结果仍会保存到标注中（AI 建议仍需人工确认）。
           </p>
         </div>

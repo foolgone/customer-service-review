@@ -601,15 +601,15 @@ export default function App() {
 
             <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[520px]">
               <div className="rounded-3xl bg-slate-900 px-4 py-3 text-white dark:bg-white dark:text-slate-900">
-                <p className="text-xs text-white/70 dark:text-slate-500">当前对话 ID</p>
+                <p className="text-xs text-white/70 dark:text-slate-600">当前对话 ID</p>
                 <p className="mt-1 text-lg font-semibold">{currentId}</p>
               </div>
-              <div className="rounded-3xl bg-cyan-500 px-4 py-3 text-white">
-                <p className="text-xs text-white/75">当前进度</p>
+              <div className="rounded-3xl bg-cyan-500 px-4 py-3 text-cyan-950">
+                <p className="text-xs">当前进度</p>
                 <p className="mt-1 text-lg font-semibold">{progressLabel}</p>
               </div>
               <div className="rounded-3xl bg-slate-100 px-4 py-3 text-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                <p className="text-xs text-slate-500 dark:text-slate-400">已标注</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">已标注</p>
                 <p className="mt-1 text-lg font-semibold">
                   {reviewedCount} / {totalCount}
                 </p>
@@ -636,7 +636,7 @@ export default function App() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">审核工作台</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">标签、评分、备注和 AI 建议都在这里完成。</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">标签、评分、备注和 AI 建议都在这里完成。</p>
                 </div>
                 <div className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                   自动保存状态：{saveState || '等待编辑'}
@@ -653,7 +653,7 @@ export default function App() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-sm text-slate-500 dark:text-slate-400">尚未选择标签</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">尚未选择标签</span>
                   )}
                 </div>
               </div>
@@ -680,7 +680,7 @@ export default function App() {
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">本次审核</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
                     <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">评分：{draft.score || 3} 分</span>
                     <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">标签：{draft.labels.length}</span>
                     <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">AI 建议：{analysisState.labels.length || 0}</span>
@@ -693,7 +693,7 @@ export default function App() {
                   <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
                     AI 分析依赖 <span className="font-medium text-slate-900 dark:text-white">DeepSeek API Key</span>，当前版本只保存在本次会话中，不会写入 localStorage。
                   </p>
-                  <div className="mt-3 flex flex-col gap-3 rounded-2xl bg-slate-100 px-3 py-3 text-xs text-slate-500 dark:bg-slate-900 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="mt-3 flex flex-col gap-3 rounded-2xl bg-slate-100 px-3 py-3 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
                     <span>
                       当前状态：{hasApiKey ? '已配置' : '未配置'} · 关闭页面后会失效
                     </span>
@@ -725,7 +725,7 @@ export default function App() {
                 <p className="font-semibold text-slate-900 dark:text-white">快捷键提示</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {QUICK_SHORTCUTS.map((item) => (
-                    <span key={item.key} className="rounded-full bg-white px-3 py-1 text-xs text-slate-500 dark:bg-slate-900 dark:text-slate-300">
+                    <span key={item.key} className="rounded-full bg-white px-3 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                       {item.key} · {item.label}
                     </span>
                   ))}
@@ -821,7 +821,7 @@ export default function App() {
           </Suspense>
         ) : null}
 
-        <footer className="pb-2 text-center text-xs text-slate-500 dark:text-slate-400">
+        <footer className="pb-2 text-center text-xs text-slate-600 dark:text-slate-400">
           本地标注会自动保存到浏览器 localStorage · 支持 JSON/CSV/Excel 导入 · 支持导出 CSV / Excel / PDF 报告 · 共 {LABELS.length} 个标签
         </footer>
       </div>

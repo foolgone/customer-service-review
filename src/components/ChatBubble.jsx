@@ -6,13 +6,13 @@ export default function ChatBubble({ turn, index, turnIndex }) {
     : 'bg-gradient-to-r from-cyan-500 to-sky-500 text-white shadow-lg shadow-cyan-500/20';
   const avatarClass = isUser
     ? 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
-    : 'border-cyan-200 bg-cyan-500 text-white dark:border-cyan-900';
+    : 'border-cyan-200 bg-cyan-500 text-cyan-950 dark:border-cyan-900';
 
   return (
     <div className={`flex ${sideClass}`}>
       <div className="max-w-[88%]">
         <div className={`mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400 ${isUser ? 'justify-start' : 'justify-end'}`}>
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+          <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {isUser ? '用户' : '客服'}
           </span>
           <span>第 {turnIndex + 1} 轮</span>

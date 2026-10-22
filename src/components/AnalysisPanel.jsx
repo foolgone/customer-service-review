@@ -43,7 +43,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">AI 仅输出建议，不会覆盖人工标注。</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">AI 仅输出建议，不会覆盖人工标注。</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -58,7 +58,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
             type="button"
             onClick={onAnalyze}
             disabled={isAnalyzing || !hasApiKey}
-            className="whitespace-nowrap rounded-full bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isAnalyzing ? '分析中...' : '重新分析'}
           </button>
@@ -97,7 +97,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500 dark:text-slate-400">模型未返回建议标签</span>
+                      <span className="text-xs text-slate-600 dark:text-slate-400">模型未返回建议标签</span>
                     )}
                   </div>
                 </div>
@@ -110,18 +110,18 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
                 </div>
               )}
 
-              <p className="text-xs text-slate-500 dark:text-slate-400">仅作为辅助建议，不会修改当前人工标注。</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">仅作为辅助建议，不会修改当前人工标注。</p>
             </div>
           ) : analysisState.status === 'error' ? (
             <p className="mt-2 text-sm text-rose-600 dark:text-rose-300">{analysisState.error}</p>
           ) : analysisState.status === 'analyzing' ? (
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">正在调用 DeepSeek 进行分析...</p>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">正在调用 DeepSeek 进行分析...</p>
           ) : (
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">点击分析后这里会展示建议标签和理由。</p>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">点击分析后这里会展示建议标签和理由。</p>
           )}
         </div>
       ) : (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
           <span>折叠模式 · AI 仅保留摘要</span>
           <span>{analysisState.status === 'success' ? `已生成 ${analysisState.labels.length || 0} 个建议标签` : '按需展开查看'}</span>
         </div>
