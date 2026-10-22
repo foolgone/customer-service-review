@@ -48,7 +48,7 @@ npm run test:coverage    # 全量测试 + 覆盖率报告（coverage/index.html�
 
 测试文件的组织方式：
 
-> 当前状态：**61 个测试文件 / 884 条用例全部通过**，行覆盖率 **99.10%**、分支覆盖率 **96.91%**（2026-10-21，含数据管理页、设置恢复与 BUG-31~35 修复回归）。
+> 当前状态：**62 个测试文件 / 895 条用例全部通过**，行覆盖率 **99.11%**、分支覆盖率 **96.89%**、函数覆盖 **99.63%**（2026-10-22，含前端性能优化与可访问性修复回归）。
 > 详细用例清单见 `docx/测试用例文档.md`，执行结果见 `docx/测试报告.md`。
 
 ```
@@ -201,12 +201,18 @@ customer-service-review/
 - [x] 报告导出（CSV / Excel 多 Sheet / PDF）
 - [x] 设置页（API Key 运行时配置、模型 / 并发、标注备份导入导出）
 - [x] 深色模式、弹窗可访问性（dialog 语义 / 焦点锁定 / Esc 关闭）
-- [x] 测试工程（Vitest + React Testing Library：884 条用例，行覆盖 99.10%）
+- [x] 全局错误边界（chunk 加载失败可恢复，不再整页白屏）
+- [x] 前端性能优化（Dashboard 懒加载、图表动画关闭，主包 596 KB → 190 KB / gzip 179 → 60 KB，CLS 0）
+- [x] 可访问性达标（Lighthouse Accessibility 100 / Best Practices 100）
+- [x] 测试工程（Vitest + React Testing Library：895 条用例，行覆盖 99.11%）
 - [x] CI 门禁（GitHub Actions：push/PR 自动跑测试 + 覆盖率阈值）
+- [x] 部署上线（GitHub Pages 自动部署：https://foolgone.github.io/customer-service-review/ ）
 
 ### 📅 计划中
-- [ ] 部署上线（Vercel / Netlify + 分支保护）
-- [ ] 真实浏览器 E2E（Playwright）
+- [ ] 真实浏览器 E2E（Playwright：导入 → 标注 → 导出 → 批量分析）
+- [ ] 用户手册（面向质检员的操作说明）
+- [ ] 技术债收口（单条 AI 分析统一到 Provider 抽象、CSV 导出并入 `lib/exporters`）
+- [ ] 部署平台迁移（Vercel / Netlify：immutable 长缓存 + PR 预览环境）
 - [ ] 其他服务商 AI Provider 接入（OpenAI / Claude）
 
 ## 🤝 贡献指南
@@ -224,4 +230,4 @@ MIT License
 ---
 
 **当前版本**: v1.0.0 (Phase 1 MVP)  
-**最后更新**: 2026-10-21
+**最后更新**: 2026-10-22
