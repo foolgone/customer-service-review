@@ -5,6 +5,7 @@
  * 注意：storage 以 JSON 序列化存储，因此预置值必须是 JSON.stringify('dark')。
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
+import { StrictMode } from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useTheme } from '../../../src/hooks/useTheme';
 import { STORAGE_KEYS } from '../../../src/lib/constants';
@@ -82,6 +83,19 @@ describe('useTheme', () => {
     preloadTheme('dark');
 
     const { result } = renderHook(() => useTheme());
+
+    expect(result.current.theme).toBe('dark');
+    expect(result.current.isDark).toBe(true);
+    expect(rootHasDarkClass()).toBe(true);
+    expect(localStorage.getItem(THEME_KEY)).toBe(JSON.stringify('dark'));
+  });
+
+  // 回归：E2E 发现「刷新后主题丢失」——旧实现先用默认值渲染、effect 里再读存储，
+  // 持久化 effect 会抢先回写默认值；StrictMode 的 effect 重跑让它稳定复现。
+  it('StrictMode 下挂载不会覆盖已保存的主题（刷新丢主题回归）', () => {
+    preloadTheme('dark');
+
+    const { result } = renderHook(() => useTheme(), { wrapper: StrictMode });
 
     expect(result.current.theme).toBe('dark');
     expect(result.current.isDark).toBe(true);
