@@ -137,7 +137,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
             <div className="flex items-start justify-between border-b border-slate-200 pb-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600">Customer Review QA</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight">智能客服对话质检报告</h1>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight">AI 质检分析报告</h1>
                 <p className="mt-1 text-xs text-slate-600">生成时间：{formatDate()}</p>
               </div>
               <div className="rounded-xl bg-slate-900 px-3 py-2 text-right text-white">
@@ -215,7 +215,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
             </div>
 
             <p className="mt-8 border-t border-slate-200 pt-3 text-[10px] text-slate-400">
-              本报告由智能客服对话质检平台生成 · 数据来源于本地导入与人工审核结果 · AI 建议仅作辅助参考
+              本报告由AI 质检分析平台生成 · 数据来源于本地导入与人工审核结果 · AI 建议仅作辅助参考
             </p>
           </div>
         </div>

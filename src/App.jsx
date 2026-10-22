@@ -572,10 +572,10 @@ export default function App() {
         <header className="glass-card rounded-[32px] px-5 py-4 md:px-6 md:py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-300">Customer Review QA</p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl">智能客服对话质检平台</h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-300">AI QA ANALYTICS</p>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl">AI 质检分析平台</h1>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-                企业级审核工作台，支持聊天式对话浏览、标签标注、1~5 分评分、AI 辅助建议、自动保存、CSV 导出和快捷键高频操作。
+                AI 驱动的对话质检与分析工作台：导入对话、标签评分、AI 辅助建议、统计看板与报告导出，全流程本地完成。
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span

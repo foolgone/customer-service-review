@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 阶段 3 P1 · App 级 AI 批量分析集成测试
  *
  * 覆盖：A 入口与权限 / B 范围计数与切换 / C 成功流程（人工标注保护、持久化、Dashboard 回归）/
@@ -311,7 +311,7 @@ describe('D. 失败隔离', () => {
     });
 
     // 页面不崩溃，主工作台仍在
-    expect(screen.getByRole('heading', { name: '智能客服对话质检平台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'AI 质检分析平台' })).toBeInTheDocument();
   });
 
   it('部分失败（001 成功 / 002 返回 401）→ 计数闭合为成功 1 / 失败 1，仅成功项写入 AI 字段', async () => {
@@ -415,7 +415,7 @@ describe('F. 关闭与回归', () => {
 
     expect(screen.queryByRole('heading', BATCH_HEADING)).not.toBeInTheDocument();
     expect(getDeepSeekCalls(fetchMock)).toHaveLength(0);
-    expect(screen.getByRole('heading', { name: '智能客服对话质检平台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'AI 质检分析平台' })).toBeInTheDocument();
     expect(actionButton('下一条')).toBeEnabled();
   });
 

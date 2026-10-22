@@ -34,7 +34,7 @@ test.describe('导出', () => {
     await page.getByRole('button', { name: '导出报告' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('heading', { name: '导出质检报告' })).toBeVisible();
-    await expect(dialog.getByText('智能客服对话质检报告')).toBeVisible();
+    await expect(dialog.getByText('AI 质检分析报告')).toBeVisible();
 
     const [download] = await Promise.all([
       page.waitForEvent('download'),

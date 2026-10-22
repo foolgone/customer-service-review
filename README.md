@@ -1,6 +1,6 @@
-# 智能客服对话质检平台
+# AI 质检分析平台
 
-> **Phase 1 MVP** - 一个基于 React + Vite + TailwindCSS 的智能客服质检工具，结合 AI 辅助和人工审核，提升质检效率 5-10 倍。
+> **Phase 1 MVP** - 基于 React + Vite + TailwindCSS 的 AI 质检分析平台：导入对话、人工标注评分、AI 辅助建议、可视化统计与报告导出，数据默认不出本机。
 
 ## ✨ 核心特性
 

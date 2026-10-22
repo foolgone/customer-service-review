@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 阶段 3 导出模块 · App 级「导出报告」集成测试
  *
  * 覆盖：A 入口与预览 / B Excel 导出 / C PDF 导出 / D 关闭与回归。
@@ -191,7 +191,7 @@ describe('B. Excel 导出', () => {
 
     expect(await screen.findByText('磁盘空间不足')).toBeInTheDocument();
     expect(screen.getByRole('heading', EXPORT_HEADING)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '智能客服对话质检平台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'AI 质检分析平台' })).toBeInTheDocument();
     closeButtons().forEach((button) => expect(button).toBeEnabled());
   });
 

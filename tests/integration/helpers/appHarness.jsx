@@ -130,7 +130,7 @@ export function setupApp(fetchOptions = {}, userOptions = {}) {
 
 /** 等待主工作台渲染完成（数据加载成功信号） */
 export async function waitForWorkbench() {
-  await screen.findByRole('heading', { name: '智能客服对话质检平台' });
+  await screen.findByRole('heading', { name: 'AI 质检分析平台' });
 }
 
 // -------------------- 常用元素定位 --------------------
