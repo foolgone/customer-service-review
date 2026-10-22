@@ -46,7 +46,9 @@ export function getLabelName(label) {
  * @returns {string} 展示串
  */
 export function formatLabelList(value, separator = '、') {
-  return toLabelArray(value).map((label) => getLabelName(label)).join(separator);
+  return toLabelArray(value)
+    .map((label) => getLabelName(label))
+    .join(separator);
 }
 
 /**

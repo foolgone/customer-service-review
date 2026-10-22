@@ -39,7 +39,7 @@ export async function runBatchAnalysis({
   analyze,
   concurrency = DEFAULT_BATCH_CONCURRENCY,
   onProgress,
-  signal
+  signal,
 } = {}) {
   if (typeof analyze !== 'function') {
     throw new Error('runBatchAnalysis 缺少 analyze 函数');
@@ -62,7 +62,7 @@ export async function runBatchAnalysis({
       index: entry.index,
       status: entry.status,
       result: entry.result,
-      error: entry.error
+      error: entry.error,
     });
   };
 
@@ -85,13 +85,13 @@ export async function runBatchAnalysis({
           index,
           item,
           status: 'error',
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         };
       }
 
       report(results[index]);
       return results[index];
-    })
+    }),
   );
 
   await Promise.all(tasks);
@@ -101,6 +101,6 @@ export async function runBatchAnalysis({
     successCount,
     failedCount,
     skippedCount,
-    cancelled: Boolean(signal?.aborted)
+    cancelled: Boolean(signal?.aborted),
   };
 }

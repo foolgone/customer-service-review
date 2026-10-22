@@ -191,7 +191,7 @@ describe('B. Excel 导出', () => {
 
     expect(await screen.findByText('磁盘空间不足')).toBeInTheDocument();
     expect(screen.getByRole('heading', EXPORT_HEADING)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'AI 质检分析平台' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '质检工作台' })).toBeInTheDocument();
     closeButtons().forEach((button) => expect(button).toBeEnabled());
   });
 

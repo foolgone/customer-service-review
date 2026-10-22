@@ -6,7 +6,7 @@ import { normalizeAnnotation } from '../../lib/storage';
 const SCOPE_OPTIONS = [
   { value: 'unanalyzed', label: '仅未分析', hint: '还没有 AI 建议的对话' },
   { value: 'pending', label: '仅未审核', hint: '还没有人工结论的对话' },
-  { value: 'all', label: '全部对话', hint: '重新分析所有对话' }
+  { value: 'all', label: '全部对话', hint: '重新分析所有对话' },
 ];
 
 const MAX_ERROR_ITEMS = 50;
@@ -21,7 +21,7 @@ function getScopeCandidates(conversations, annotations, scope) {
     .map((conversation) => ({
       id: conversation.id,
       userContent: getConversationText(conversation, 'user'),
-      assistantContent: getConversationText(conversation, 'assistant')
+      assistantContent: getConversationText(conversation, 'assistant'),
     }))
     .filter((item) => item.userContent || item.assistantContent)
     .filter((item) => {
@@ -51,7 +51,7 @@ export default function BatchAnalysisPanel({
   defaultConcurrency = 3,
   onClose,
   onApplyResults,
-  onRunningChange
+  onRunningChange,
 }) {
   const [scope, setScope] = useState('unanalyzed');
   const [concurrency, setConcurrency] = useState(defaultConcurrency);
@@ -64,13 +64,19 @@ export default function BatchAnalysisPanel({
   const dialogRef = useDialogA11y({ open, onClose, disableClose: running });
 
   const scopeCounts = useMemo(
-    () => Object.fromEntries(SCOPE_OPTIONS.map((option) => [option.value, getScopeCandidates(conversations, annotations, option.value).length])),
-    [conversations, annotations]
+    () =>
+      Object.fromEntries(
+        SCOPE_OPTIONS.map((option) => [
+          option.value,
+          getScopeCandidates(conversations, annotations, option.value).length,
+        ]),
+      ),
+    [conversations, annotations],
   );
 
   const candidates = useMemo(
     () => getScopeCandidates(conversations, annotations, scope),
-    [conversations, annotations, scope]
+    [conversations, annotations, scope],
   );
 
   useEffect(() => {
@@ -123,8 +129,8 @@ export default function BatchAnalysisPanel({
             ...previous,
             completed: entry.completed,
             success: previous.success + (entry.status === 'success' ? 1 : 0),
-            failed: previous.failed + (entry.status === 'error' ? 1 : 0)
-          }))
+            failed: previous.failed + (entry.status === 'error' ? 1 : 0),
+          })),
       });
 
       const records = outcome.results
@@ -132,7 +138,7 @@ export default function BatchAnalysisPanel({
         .map((item) => ({
           id: item.item.id,
           labels: item.result?.labels || [],
-          reason: item.result?.reason || ''
+          reason: item.result?.reason || '',
         }));
 
       const failedItems = outcome.results
@@ -164,7 +170,7 @@ export default function BatchAnalysisPanel({
     running: `正在分析：${processed} / ${progress.total}`,
     done: `分析完成：成功 ${progress.success} 条${progress.failed ? ` · 失败 ${progress.failed} 条` : ''}`,
     cancelled: `已取消：完成 ${progress.success} 条${progress.failed ? ` · 失败 ${progress.failed} 条` : ''}${skipped ? ` · 跳过 ${skipped} 条` : ''}`,
-    error: '批量分析失败'
+    error: '批量分析失败',
   }[status];
 
   return (
@@ -181,12 +187,16 @@ export default function BatchAnalysisPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby={TITLE_ID}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Batch AI</p>
-            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">批量 AI 分析</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600 dark:text-blue-300">
+              Batch AI
+            </p>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              批量 AI 分析
+            </h2>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               逐条调用 DeepSeek 生成建议标签与理由；只写入 AI 建议，不会覆盖人工标注。
             </p>
@@ -195,7 +205,7 @@ export default function BatchAnalysisPanel({
             type="button"
             onClick={onClose}
             disabled={running}
-            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-white"
+            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:text-white"
           >
             关闭
           </button>
@@ -213,10 +223,10 @@ export default function BatchAnalysisPanel({
                     type="button"
                     disabled={running}
                     onClick={() => setScope(option.value)}
-                    className={`rounded-2xl border px-3 py-3 text-left transition disabled:cursor-not-allowed ${
+                    className={`rounded-lg border px-3 py-3 text-left transition disabled:cursor-not-allowed ${
                       active
-                        ? 'border-cyan-400 bg-cyan-500/10 text-cyan-800 ring-4 ring-cyan-500/10 dark:text-cyan-100'
-                        : 'border-slate-200 bg-white/80 text-slate-700 hover:border-cyan-300 hover:bg-cyan-500/5 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-200'
+                        ? 'border-blue-400 bg-blue-500/10 text-blue-800 ring-4 ring-blue-500/10 dark:text-blue-100'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-500/5 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-200'
                     }`}
                   >
                     <p className="text-sm font-semibold">{option.label}</p>
@@ -244,30 +254,40 @@ export default function BatchAnalysisPanel({
               </select>
             </label>
 
-            <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs text-slate-600 dark:bg-slate-950/60 dark:text-slate-400">
-              本次将分析 <span className="font-semibold text-slate-900 dark:text-white">{candidates.length}</span> 条 · 约消耗 {candidates.length} 次 API 调用
+            <div className="rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600 dark:bg-slate-950 dark:text-slate-400">
+              本次将分析 <span className="font-semibold text-slate-900 dark:text-white">{candidates.length}</span> 条 ·
+              约消耗 {candidates.length} 次 API 调用
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">{summaryText}</p>
               <p className="shrink-0 text-xs text-slate-600 dark:text-slate-400">{percent}%</p>
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-              <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-500 transition-all" style={{ width: `${percent}%` }} />
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-500 transition-all"
+                style={{ width: `${percent}%` }}
+              />
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
-              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-700 dark:text-emerald-300">成功 {progress.success}</span>
-              <span className="rounded-full bg-rose-500/10 px-3 py-1 text-rose-700 dark:text-rose-300">失败 {progress.failed}</span>
-              <span className="rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800">总计 {progress.total || candidates.length}</span>
+              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-700 dark:text-emerald-300">
+                成功 {progress.success}
+              </span>
+              <span className="rounded-full bg-rose-500/10 px-3 py-1 text-rose-700 dark:text-rose-300">
+                失败 {progress.failed}
+              </span>
+              <span className="rounded-full bg-slate-200/70 px-3 py-1 dark:bg-slate-800">
+                总计 {progress.total || candidates.length}
+              </span>
             </div>
           </div>
 
           {error ? <p className="text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
 
           {errors.length ? (
-            <details className="rounded-2xl border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
+            <details className="rounded-lg border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
               <summary className="cursor-pointer font-medium">
                 查看 {errors.length} 条失败原因
                 {progress.failed > errors.length ? `（共 ${progress.failed} 条，仅展示前 ${errors.length} 条）` : ''}
@@ -292,7 +312,7 @@ export default function BatchAnalysisPanel({
             type="button"
             onClick={onClose}
             disabled={running}
-            className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+            className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
           >
             关闭
           </button>
@@ -311,7 +331,7 @@ export default function BatchAnalysisPanel({
                 type="button"
                 onClick={handleStart}
                 disabled={!candidates.length || !apiKey}
-                className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
+                className="primary-button bg-blue-700 text-white hover:bg-blue-800"
               >
                 {`开始分析 ${candidates.length} 条`}
               </button>

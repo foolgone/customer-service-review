@@ -53,7 +53,7 @@ export default class ErrorBoundary extends Component {
 
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="glass-card max-w-xl rounded-3xl px-8 py-7 text-center">
+        <div className="glass-card max-w-xl rounded-xl px-8 py-7 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-500">Something went wrong</p>
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
             {isChunkError ? '页面需要重新加载' : '页面出现了一个错误'}
@@ -66,7 +66,7 @@ export default class ErrorBoundary extends Component {
           <button
             type="button"
             onClick={this.handleReload}
-            className="mt-5 inline-flex items-center justify-center rounded-2xl bg-cyan-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-cyan-600"
+            className="mt-5 inline-flex items-center justify-center rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-600"
           >
             重新加载
           </button>

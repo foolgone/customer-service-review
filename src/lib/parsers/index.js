@@ -21,7 +21,7 @@ export async function parseFile(file, options = {}) {
       success: false,
       data: [],
       errors: [validation.error],
-      preview: []
+      preview: [],
     };
   }
 
@@ -45,7 +45,7 @@ export async function parseFile(file, options = {}) {
         success: false,
         data: [],
         errors: [`不支持的文件格式：.${ext}`],
-        preview: []
+        preview: [],
       };
   }
 }
@@ -64,5 +64,5 @@ export {
   validateAIResult,
   normalizeConversation,
   normalizeAIResult,
-  checkDuplicates
+  checkDuplicates,
 } from './validator';

@@ -65,26 +65,26 @@ describe('FileUploader', () => {
     const region = view.region();
 
     fireEvent.dragOver(region);
-    expect(region).toHaveClass('border-cyan-400');
+    expect(region).toHaveClass('border-blue-400');
 
     fireEvent.drop(region, { dataTransfer: { files: [file] } });
 
     expect(view.onSelectFile).toHaveBeenCalledTimes(1);
     expect(view.onSelectFile.mock.calls[0][0]).toBe(file);
-    expect(region).not.toHaveClass('border-cyan-400');
+    expect(region).not.toHaveClass('border-blue-400');
   });
 
   it('dragOver 进入高亮样式，dragLeave 后恢复默认样式', () => {
     const view = renderUploader();
     const region = view.region();
 
-    expect(region).not.toHaveClass('border-cyan-400');
+    expect(region).not.toHaveClass('border-blue-400');
 
     fireEvent.dragOver(region);
-    expect(region).toHaveClass('border-cyan-400');
+    expect(region).toHaveClass('border-blue-400');
 
     fireEvent.dragLeave(region);
-    expect(region).not.toHaveClass('border-cyan-400');
+    expect(region).not.toHaveClass('border-blue-400');
   });
 
   it('input change 或 drop 的文件列表为空 → 不触发 onSelectFile', () => {

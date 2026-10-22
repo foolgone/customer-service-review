@@ -40,7 +40,7 @@ export function validateConversation(conversation) {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -127,28 +127,28 @@ const DEFAULT_ALLOWED_TYPES = [
   'application/json',
   'text/csv',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain'
+  'text/plain',
 ];
 
 export function validateFile(file, options = {}) {
   if (!file || typeof file !== 'object') {
     return {
       valid: false,
-      error: '未选择文件'
+      error: '未选择文件',
     };
   }
 
   const {
     allowedTypes = null,
     allowedExtensions = ['json', 'csv', 'xlsx', 'xls', 'txt'],
-    maxSize = 10 * 1024 * 1024 // 10MB
+    maxSize = 10 * 1024 * 1024, // 10MB
   } = options;
 
   // 验证文件名
   if (!file.name || file.name.trim().length === 0) {
     return {
       valid: false,
-      error: '文件名不能为空'
+      error: '文件名不能为空',
     };
   }
 
@@ -157,7 +157,7 @@ export function validateFile(file, options = {}) {
   if (!ext || !allowedExtensions.includes(ext)) {
     return {
       valid: false,
-      error: `不支持的文件扩展名：.${ext || '(无)'}。支持：${allowedExtensions.join(', ')}`
+      error: `不支持的文件扩展名：.${ext || '(无)'}。支持：${allowedExtensions.join(', ')}`,
     };
   }
 
@@ -167,7 +167,7 @@ export function validateFile(file, options = {}) {
     const fileMB = (file.size / 1024 / 1024).toFixed(2);
     return {
       valid: false,
-      error: `文件过大：${fileMB} MB。最大支持：${maxMB} MB`
+      error: `文件过大：${fileMB} MB。最大支持：${maxMB} MB`,
     };
   }
 
@@ -177,7 +177,7 @@ export function validateFile(file, options = {}) {
       if (!allowedTypes.includes(file.type)) {
         return {
           valid: false,
-          error: `不支持的文件类型：${file.type}。支持：${allowedTypes.join(', ')}`
+          error: `不支持的文件类型：${file.type}。支持：${allowedTypes.join(', ')}`,
         };
       }
     } else if (!DEFAULT_ALLOWED_TYPES.includes(file.type)) {
@@ -197,14 +197,14 @@ export function validateFieldMapping(mapping) {
   if (!mapping || typeof mapping !== 'object') {
     return {
       valid: false,
-      errors: ['字段映射不能为空']
+      errors: ['字段映射不能为空'],
     };
   }
 
   const errors = [];
   const requiredFields = ['id', 'user', 'assistant'];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     if (!mapping[field]) {
       errors.push(`缺少必填字段映射：${field}`);
     }
@@ -212,7 +212,7 @@ export function validateFieldMapping(mapping) {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -244,13 +244,13 @@ export function normalizeConversation(conversation) {
 
   // 标准化每个 turn
   conversation.turns = conversation.turns
-    .filter(turn => turn && typeof turn === 'object')
-    .map(turn => ({
+    .filter((turn) => turn && typeof turn === 'object')
+    .map((turn) => ({
       role: turn.role || 'user',
       content: (turn.content || '').toString().trim(),
-      timestamp: turn.timestamp || null
+      timestamp: turn.timestamp || null,
     }))
-    .filter(turn => turn.content.length > 0); // 过滤空内容
+    .filter((turn) => turn.content.length > 0); // 过滤空内容
 
   // 确保至少有一轮对话
   if (conversation.turns.length === 0) {
@@ -289,14 +289,14 @@ export function validateConversations(conversations) {
         invalid.push({
           index,
           conversation,
-          errors: ['标准化后对话无效（可能是内容为空）']
+          errors: ['标准化后对话无效（可能是内容为空）'],
         });
       }
     } else {
       invalid.push({
         index,
         conversation,
-        errors: result.errors
+        errors: result.errors,
       });
     }
   });
@@ -314,7 +314,7 @@ export function checkDuplicates(conversations) {
   const unique = [];
   const duplicates = [];
 
-  conversations.forEach(conv => {
+  conversations.forEach((conv) => {
     const id = conv.id;
 
     if (idMap.has(id)) {
@@ -391,6 +391,6 @@ export function normalizeAIResult(result) {
     confidence: result.confidence || 0,
     severity: result.severity || 'low',
     suggestions: result.suggestions || [],
-    positiveAspects: result.positive_aspects || result.positiveAspects || []
+    positiveAspects: result.positive_aspects || result.positiveAspects || [],
   };
 }

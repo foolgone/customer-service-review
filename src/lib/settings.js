@@ -8,13 +8,13 @@ import { getConfig, saveConfig } from './storage';
 
 export const AI_MODEL_OPTIONS = [
   { value: 'deepseek-chat', label: 'deepseek-chat（通用对话）' },
-  { value: 'deepseek-reasoner', label: 'deepseek-reasoner（推理模型）' }
+  { value: 'deepseek-reasoner', label: 'deepseek-reasoner（推理模型）' },
 ];
 
 export const DEFAULT_SETTINGS = {
   apiKey: '',
   model: 'deepseek-chat',
-  concurrency: 3
+  concurrency: 3,
 };
 
 const CONCURRENCY_MIN = 1;
@@ -35,7 +35,7 @@ export function normalizeSettings(settings = {}) {
   return {
     apiKey: typeof settings.apiKey === 'string' ? settings.apiKey.trim() : '',
     model: modelValues.includes(settings.model) ? settings.model : DEFAULT_SETTINGS.model,
-    concurrency
+    concurrency,
   };
 }
 
@@ -50,7 +50,7 @@ export function loadSettings() {
     apiKey: config?.apiKey,
     // 旧版本默认写的是 'deepseek'，映射到具体模型
     model: config?.aiModel === 'deepseek' || !config?.aiModel ? DEFAULT_SETTINGS.model : config.aiModel,
-    concurrency: config?.concurrency
+    concurrency: config?.concurrency,
   });
 }
 
@@ -66,7 +66,7 @@ export function saveSettings(settings = {}) {
     ...getConfig(),
     apiKey: next.apiKey,
     aiModel: next.model,
-    concurrency: next.concurrency
+    concurrency: next.concurrency,
   });
 
   return next;

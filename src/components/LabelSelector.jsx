@@ -1,8 +1,12 @@
 import { LABELS } from '../lib/constants';
 
+/**
+ * 问题标签选择器
+ * 紧凑行式：一行一个标签 + 快捷键，适配右侧 380px 标注栏（旧的多列网格会把中文挤成竖排）。
+ */
 export default function LabelSelector({ selectedLabels, onToggleLabel }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-1.5">
       {LABELS.map((item) => {
         const active = selectedLabels.includes(item.value);
 
@@ -10,24 +14,22 @@ export default function LabelSelector({ selectedLabels, onToggleLabel }) {
           <button
             key={item.value}
             type="button"
+            aria-pressed={active}
             onClick={() => onToggleLabel(item.value)}
-            className={`rounded-2xl border px-4 py-4 text-left transition ${
+            className={`flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-left transition ${
               active
-                ? 'border-cyan-400 bg-cyan-500/10 text-cyan-800 ring-4 ring-cyan-500/10 dark:text-cyan-100'
-                : 'border-slate-200 bg-white/80 text-slate-700 hover:border-cyan-300 hover:bg-cyan-500/5 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-200'
+                ? 'border-blue-400 bg-blue-500/10 text-blue-800 ring-4 ring-blue-500/10 dark:text-blue-100'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-500/5 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-200'
             }`}
           >
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold">{item.label}</p>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                {item.shortcut}
-              </span>
+            <span className="flex min-w-0 items-center gap-2">
               <span
-                className={`h-3 w-3 rounded-full ${
-                  active ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'
-                }`}
+                className={`h-2 w-2 shrink-0 rounded-full ${active ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                aria-hidden="true"
               />
-            </div>
+              <span className="truncate text-sm font-medium">{item.label}</span>
+            </span>
+            <kbd className="kbd shrink-0">{item.shortcut}</kbd>
           </button>
         );
       })}

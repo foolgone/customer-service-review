@@ -25,7 +25,7 @@ function withTimeout(promise, ms, message) {
       (error) => {
         clearTimeout(timer);
         reject(error);
-      }
+      },
     );
   });
 }
@@ -44,7 +44,7 @@ function getProblemConversations(conversations, annotations, limit = 10) {
         user: getConversationText(conversation, 'user'),
         labels: toLabelArray(annotation.labels),
         score: Number(annotation.score) || 0,
-        comment: annotation.comment || ''
+        comment: annotation.comment || '',
       };
     });
 }
@@ -87,7 +87,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
       await withTimeout(
         exportReportToPdf(reportRef.current, { fileName: getPdfFileName() }),
         EXPORT_TIMEOUT_MS,
-        'PDF 生成超时，请重试或减少数据量'
+        'PDF 生成超时，请重试或减少数据量',
       );
       setMessage({ type: 'success', text: 'PDF 已导出' });
     } catch (error) {
@@ -111,12 +111,14 @@ export default function ExportReportPanel({ open, conversations = [], annotation
         role="dialog"
         aria-modal="true"
         aria-labelledby={TITLE_ID}
-        className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+        className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Export</p>
-            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">导出质检报告</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600 dark:text-blue-300">Export</p>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              导出质检报告
+            </h2>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               Excel 含明细 / 统计 / 问题对话三个工作表；PDF 为当前预览的报告版式。
             </p>
@@ -125,18 +127,18 @@ export default function ExportReportPanel({ open, conversations = [], annotation
             type="button"
             onClick={onClose}
             disabled={Boolean(busy)}
-            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-white"
+            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:text-white"
           >
             关闭
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto bg-slate-100 p-4 dark:bg-slate-950/60">
+        <div className="flex-1 overflow-auto bg-slate-100 p-4 dark:bg-slate-950">
           {/* 报告节点：刻意使用固定浅色样式，保证 PDF 与主题无关、始终白底黑字 */}
           <div ref={reportRef} data-export-report className="mx-auto w-[780px] bg-white px-10 py-8 text-slate-900">
             <div className="flex items-start justify-between border-b border-slate-200 pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600">Customer Review QA</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Customer Review QA</p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight">AI 质检分析报告</h1>
                 <p className="mt-1 text-xs text-slate-600">生成时间：{formatDate()}</p>
               </div>
@@ -151,7 +153,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                 { label: '已审核', value: `${reviewed} / ${total}` },
                 { label: '回复准确率', value: `${Number(analytics.accuracyRate) || 0}%` },
                 { label: '风险回复率', value: `${Number(analytics.riskyRate) || 0}%` },
-                { label: '平均评分', value: Number(analytics.avgScore) || 0 }
+                { label: '平均评分', value: Number(analytics.avgScore) || 0 },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-slate-200 px-3 py-3">
                   <p className="text-[11px] text-slate-600">{item.label}</p>
@@ -166,7 +168,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                 <span>{completionRate}%</span>
               </div>
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
-                <div className="h-full rounded-full bg-cyan-500" style={{ width: `${completionRate}%` }} />
+                <div className="h-full rounded-full bg-blue-500" style={{ width: `${completionRate}%` }} />
               </div>
             </div>
 
@@ -187,7 +189,9 @@ export default function ExportReportPanel({ open, conversations = [], annotation
                     </span>
                   </div>
                 ))}
-                {!(analytics.historicalLabels || []).length ? <p className="text-xs text-slate-400">暂无标注数据</p> : null}
+                {!(analytics.historicalLabels || []).length ? (
+                  <p className="text-xs text-slate-400">暂无标注数据</p>
+                ) : null}
               </div>
             </div>
 
@@ -244,7 +248,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
               type="button"
               onClick={onClose}
               disabled={Boolean(busy)}
-              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
             >
               关闭
             </button>
@@ -252,7 +256,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
               type="button"
               onClick={handleExportExcel}
               disabled={Boolean(busy)}
-              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
             >
               {busy === 'excel' ? '导出中...' : '导出 Excel'}
             </button>
@@ -260,7 +264,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
               type="button"
               onClick={handleExportPdf}
               disabled={Boolean(busy)}
-              className="primary-button bg-cyan-700 text-white hover:bg-cyan-800 disabled:opacity-50"
+              className="primary-button bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50"
             >
               {busy === 'pdf' ? '生成中...' : '导出 PDF'}
             </button>

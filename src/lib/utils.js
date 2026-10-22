@@ -221,7 +221,7 @@ export function formatFileSize(bytes) {
  * @returns {Promise} Promise 对象
  */
 export function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -311,7 +311,7 @@ export function uniqueArray(arr, key = null) {
   if (key) {
     // 对象数组去重
     const seen = new Set();
-    return arr.filter(item => {
+    return arr.filter((item) => {
       const val = item[key];
       if (seen.has(val)) {
         return false;

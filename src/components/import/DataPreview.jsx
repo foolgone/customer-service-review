@@ -1,7 +1,7 @@
 const FIELD_DEFS = [
   { key: 'id', label: '对话 ID' },
   { key: 'user', label: '用户消息' },
-  { key: 'assistant', label: '客服回复' }
+  { key: 'assistant', label: '客服回复' },
 ];
 
 function getConversationText(conversation, role) {
@@ -12,7 +12,7 @@ function getPreviewRows(result) {
   return (result?.data || []).slice(0, 10).map((conversation) => ({
     id: conversation.id,
     user: getConversationText(conversation, 'user'),
-    assistant: getConversationText(conversation, 'assistant')
+    assistant: getConversationText(conversation, 'assistant'),
   }));
 }
 
@@ -22,19 +22,19 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div className="rounded-2xl bg-slate-100 px-3 py-2 text-center dark:bg-slate-950/60">
+        <div className="rounded-lg bg-slate-100 px-3 py-2 text-center dark:bg-slate-950">
           <p className="text-lg font-semibold text-slate-900 dark:text-white">{stats.total}</p>
           <p className="text-xs text-slate-600 dark:text-slate-400">总行数</p>
         </div>
-        <div className="rounded-2xl bg-emerald-500/10 px-3 py-2 text-center">
+        <div className="rounded-lg bg-emerald-500/10 px-3 py-2 text-center">
           <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{stats.valid}</p>
           <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">有效对话</p>
         </div>
-        <div className="rounded-2xl bg-amber-500/10 px-3 py-2 text-center">
+        <div className="rounded-lg bg-amber-500/10 px-3 py-2 text-center">
           <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">{stats.invalid}</p>
           <p className="text-xs text-amber-700/80 dark:text-amber-300/80">格式错误</p>
         </div>
-        <div className="rounded-2xl bg-rose-500/10 px-3 py-2 text-center">
+        <div className="rounded-lg bg-rose-500/10 px-3 py-2 text-center">
           <p className="text-lg font-semibold text-rose-700 dark:text-rose-300">{stats.dropped}</p>
           <p className="text-xs text-rose-700/80 dark:text-rose-300/80">缺必填字段</p>
         </div>
@@ -73,9 +73,9 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
           <p className="text-sm font-semibold text-slate-900 dark:text-white">数据预览</p>
           <p className="text-xs text-slate-600 dark:text-slate-400">最多显示前 10 条</p>
         </div>
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
           <table className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
-            <thead className="bg-slate-50 dark:bg-slate-950/60">
+            <thead className="bg-slate-50 dark:bg-slate-950">
               <tr>
                 <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">ID</th>
                 <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">用户消息</th>
@@ -86,7 +86,9 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
               {previewRows.length ? (
                 previewRows.map((row, index) => (
                   <tr key={`${row.id}-${index}`} className="align-top">
-                    <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-700 dark:text-slate-200">{row.id}</td>
+                    <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-700 dark:text-slate-200">
+                      {row.id}
+                    </td>
                     <td className="max-w-[18rem] px-3 py-2 text-slate-600 dark:text-slate-300">
                       <span className="line-clamp-2">{row.user}</span>
                     </td>
@@ -108,7 +110,7 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
       </div>
 
       {result?.skippedRows?.length ? (
-        <details className="rounded-2xl border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
+        <details className="rounded-lg border border-rose-200 bg-rose-500/5 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-200">
           <summary className="cursor-pointer font-medium">
             已跳过 {result.skippedRows.length} 行（缺必填字段，不会导入）
           </summary>
@@ -123,7 +125,7 @@ export default function DataPreview({ result, stats, mapping, columns, needsMapp
       ) : null}
 
       {result?.errors?.length ? (
-        <details className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+        <details className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
           <summary className="cursor-pointer font-medium text-slate-700 dark:text-slate-200">
             查看 {result.errors.length} 条解析提示
           </summary>

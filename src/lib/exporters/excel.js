@@ -41,7 +41,7 @@ export function buildDetailRows(conversations = [], annotations = {}) {
       AI建议标签: formatLabelList(annotation.aiLabels),
       AI建议理由: annotation.aiReason || '',
       审核时间: annotation.reviewedAt || '',
-      审核耗时秒: getDurationSeconds(annotation)
+      审核耗时秒: getDurationSeconds(annotation),
     };
   });
 }
@@ -69,7 +69,7 @@ export function buildStatRows(analytics = {}) {
     ['平均评分', Number(analytics.avgScore) || 0],
     ['平均审核耗时', formatDurationLabel(Number(analytics.avgDurationMs) || 0)],
     [],
-    ['标签', '次数', '占比']
+    ['标签', '次数', '占比'],
   ];
 
   (analytics.historicalLabels || []).forEach((item) => {
@@ -105,7 +105,7 @@ export function buildProblemRows(conversations = [], annotations = {}) {
         客服回复: getConversationText(conversation, 'assistant'),
         问题标签: formatLabelList(annotation.labels),
         质检评分: getScore(annotation),
-        备注: annotation.comment || ''
+        备注: annotation.comment || '',
       };
     });
 }
@@ -121,9 +121,17 @@ export function buildProblemRows(conversations = [], annotations = {}) {
 export function buildWorkbook({ conversations = [], annotations = {}, analytics = {} } = {}) {
   const workbook = XLSX.utils.book_new();
 
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(buildDetailRows(conversations, annotations)), '质检明细');
+  XLSX.utils.book_append_sheet(
+    workbook,
+    XLSX.utils.json_to_sheet(buildDetailRows(conversations, annotations)),
+    '质检明细',
+  );
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(buildStatRows(analytics)), '统计汇总');
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(buildProblemRows(conversations, annotations)), '问题对话');
+  XLSX.utils.book_append_sheet(
+    workbook,
+    XLSX.utils.json_to_sheet(buildProblemRows(conversations, annotations)),
+    '问题对话',
+  );
 
   return workbook;
 }

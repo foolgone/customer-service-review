@@ -22,7 +22,7 @@ export async function parseJSON(file) {
       return {
         success: false,
         data: [],
-        errors: [`JSON 格式错误：${error.message}`]
+        errors: [`JSON 格式错误：${error.message}`],
       };
     }
 
@@ -48,14 +48,14 @@ export async function parseJSON(file) {
         return {
           success: false,
           data: [],
-          errors: ['JSON 格式不符合要求，需要数组或包含对话数据的对象']
+          errors: ['JSON 格式不符合要求，需要数组或包含对话数据的对象'],
         };
       }
     } else {
       return {
         success: false,
         data: [],
-        errors: ['JSON 数据格式错误']
+        errors: ['JSON 数据格式错误'],
       };
     }
 
@@ -65,13 +65,13 @@ export async function parseJSON(file) {
     return {
       success: true,
       data: valid,
-      errors: invalid.map(item => `第 ${item.index + 1} 条对话：${item.errors.join(', ')}`)
+      errors: invalid.map((item) => `第 ${item.index + 1} 条对话：${item.errors.join(', ')}`),
     };
   } catch (error) {
     return {
       success: false,
       data: [],
-      errors: [`解析失败：${error.message}`]
+      errors: [`解析失败：${error.message}`],
     };
   }
 }

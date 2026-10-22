@@ -23,18 +23,18 @@ export default defineConfig({
     video: 'off',
     locale: 'zh-CN',
     timezoneId: 'Asia/Shanghai',
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
   },
   webServer: {
     command: `npx vite --port ${PORT} --strictPort`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000
+    timeout: 60_000,
   },
   projects: [
     // 本地默认用系统已装的 Edge（无需下载浏览器）；CI（Ubuntu 无 Edge）用 Playwright 自带 Chromium
     process.env.CI
       ? { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
-      : { name: 'edge', use: { ...devices['Desktop Chrome'], channel: 'msedge' } }
-  ]
+      : { name: 'edge', use: { ...devices['Desktop Chrome'], channel: 'msedge' } },
+  ],
 });

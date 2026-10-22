@@ -14,7 +14,7 @@ export async function analyzeConversation({
   userContent = '',
   assistantContent = '',
   endpoint,
-  fetchImpl
+  fetchImpl,
 } = {}) {
   const provider = createProvider(providerId, { apiKey, model, endpoint, fetchImpl });
   return provider.analyze({ userContent, assistantContent });

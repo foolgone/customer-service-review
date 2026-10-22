@@ -9,6 +9,8 @@
 - ⚡ **高效标注** - 键盘快捷键 + 自动保存，单条审核 < 1 分钟
 - 📊 **数据洞察** - 可视化统计 + 多维度分析
 - 📄 **报告导出** - 支持 CSV、Excel、PDF 多格式导出
+- 🧭 **企业级界面** - 侧边导航 + 工作台三栏（对话清单 / 对话内容 / 标注面板）+ 独立分析看板，高频操作固定在顶部
+- ⌨️ **键盘流** - Enter / Ctrl+S / A / D / 1-6 / Alt+1-5，? 打开快捷键面板
 - 🎨 **深色模式** - 支持浅色/深色主题切换
 - 💾 **本地存储** - 数据不离开本地，保护隐私
 
@@ -67,7 +69,7 @@ tests/
 Playwright 驱动的真实浏览器测试，覆盖 jsdom 覆盖不到的部分：真实下载、文件选择、`localStorage` 跨刷新持久化、真实布局与图表渲染。
 
 ```bash
-npm run test:e2e          # 全量 E2E（15 个用例）
+npm run test:e2e          # 全量 E2E（17 个用例）
 npm run test:e2e:headed   # 有头模式，方便观察
 npm run test:e2e:report   # 查看最近一次 HTML 报告
 ```
@@ -148,6 +150,8 @@ customer-service-review/
 │   │   ├── export/                     # 报告导出面板
 │   │   ├── settings/                   # 设置面板
 │   │   └── *.jsx                       # 主界面组件（ActionBar / AnalysisPanel / ChatBubble / ConversationPanel / Dashboard / LabelSelector / ScoreSelector）
+│   ├── pages/                          # 页面（质检工作台由 App 内联、分析看板独立页）
+│   ├── ui/                             # 应用外壳与图标（AppShell / icons）
 │   ├── hooks/                          # 自定义 Hooks（useTheme / useKeyboardShortcuts / useDialogA11y）
 │   ├── lib/                            # 核心库
 │   │   ├── parsers/                    # 数据解析器（json / csv / excel / validator）
@@ -223,7 +227,7 @@ customer-service-review/
 - [x] 前端性能优化（Dashboard 懒加载、图表动画关闭，主包 596 KB → 190 KB / gzip 179 → 60 KB，CLS 0）
 - [x] 可访问性达标（Lighthouse Accessibility 100 / Best Practices 100）
 - [x] 测试工程（Vitest + React Testing Library：892 条用例，行覆盖 99.07%）
-- [x] E2E 测试（Playwright：15 个用例，覆盖导入/标注/导出/AI/主题持久化真实浏览器流程）
+- [x] E2E 测试（Playwright：17 个用例，覆盖导航/导入/标注/导出/AI/主题持久化/快捷键面板）
 - [x] CI 门禁（GitHub Actions：push/PR 自动跑单测 + 覆盖率阈值 + Playwright E2E）
 - [x] 部署上线（GitHub Pages 自动部署：https://foolgone.github.io/customer-service-review/ ）
 - [x] 用户手册（面向质检员的操作说明：`docx/用户手册.md`）

@@ -1,15 +1,26 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import ActionBar from './components/ActionBar';
 import AnalysisPanel from './components/AnalysisPanel';
+import ConversationList from './components/ConversationList';
 import ConversationPanel from './components/ConversationPanel';
 import LabelSelector from './components/LabelSelector';
 import ScoreSelector from './components/ScoreSelector';
+import DashboardSkeleton from './components/common/DashboardSkeleton';
+import ShortcutsDialog from './components/common/ShortcutsDialog';
+import AppShell from './ui/AppShell';
 import { analyzeConversation } from './lib/ai';
-import { buildAnalytics, isHumanReviewed } from './lib/analytics';
-import { DEFAULT_ANNOTATION, LABELS, QUICK_SHORTCUTS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
+import { buildAnalytics, formatDurationLabel, isHumanReviewed } from './lib/analytics';
+import { DEFAULT_ANNOTATION, LABELS, REVIEWER_PROFILE, SCORE_SHORTCUT_VALUE_MAP } from './lib/constants';
 import { exportConversationsToCsv } from './lib/exporters/csv';
 import { loadSettings, saveSettings } from './lib/settings';
-import { addImportHistory, loadAnnotations, normalizeAnnotation, readStoredTheme, saveAnnotations } from './lib/storage';
+import {
+  addImportHistory,
+  loadAnnotations,
+  normalizeAnnotation,
+  readStoredTheme,
+  saveAnnotations,
+} from './lib/storage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
 
@@ -21,10 +32,10 @@ const ExportReportPanel = lazy(() => import('./components/export/ExportReportPan
 const SettingsPanel = lazy(() => import('./components/settings/SettingsPanel'));
 // 数据管理面板按需加载
 const DataManagerPanel = lazy(() => import('./components/data/DataManagerPanel'));
-// Dashboard 按需加载：内含 recharts（本项目体积最大的第三方依赖），不参与首屏加载
-const Dashboard = lazy(() => import('./components/Dashboard'));
 // 批量分析面板按需加载
 const BatchAnalysisPanel = lazy(() => import('./components/ai/BatchAnalysisPanel'));
+// 分析看板按需加载：内含 recharts（体积最大的第三方依赖），不参与工作台首屏
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 
 function getConversationText(conversation, role) {
   return conversation?.turns?.find((turn) => turn.role === role)?.content || '';
@@ -40,40 +51,6 @@ function getProgressLabel(currentIndex, total) {
 
 // 兼容子路径部署（如 GitHub Pages 的 /customer-service-review/）；本地与根路径部署时仍为 /data/...
 const CONVERSATIONS_URL = `${import.meta.env.BASE_URL}data/conversations.json`;
-
-// Dashboard 懒加载占位：高度对齐 Dashboard.jsx 的真实卡片（2026-10-22 在 1468×936 视口实测：
-// 区块 80 / 指标行 117 / 主区左列 361+317+301、右列 375+407+199），让 chunk 加载前后的布局位移接近 0。
-// aria-hidden 保证骨架不会被测试或读屏当作真实内容。
-function DashboardSkeleton() {
-  return (
-    <section
-      aria-hidden="true"
-      className="rounded-[32px] border border-white/60 bg-white/70 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75 md:p-6"
-    >
-      <div className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="h-[117px] animate-pulse rounded-[24px] bg-slate-100 dark:bg-slate-800" />
-        ))}
-      </div>
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="grid gap-4">
-          <div className="h-[361px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="h-[317px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-            <div className="h-[317px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-          </div>
-          <div className="h-[301px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-        </div>
-        <div className="grid gap-4">
-          <div className="h-[375px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-          <div className="h-[407px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-          <div className="h-[199px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-        </div>
-      </div>
-    </section>
-  );
-}
 
 const LABEL_DISPLAY_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
 const LABEL_SHORTCUT_MAP = new Map(LABELS.map((item) => [item.shortcut, item.value]));
@@ -104,7 +81,8 @@ function getLoadErrorMessage(loadError) {
   return '读取对话数据失败';
 }
 
-export default function App() {
+function AppContent() {
+  const navigate = useNavigate();
   const { isDark, setTheme, toggleTheme } = useTheme();
   const [conversations, setConversations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -124,6 +102,7 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [dataSource, setDataSource] = useState({ label: '示例数据', imported: false, fileName: '' });
   const annotationsRef = useRef({});
@@ -195,7 +174,7 @@ export default function App() {
         status: 'success',
         reason: currentAnnotation.aiReason || '',
         labels: currentAnnotation.aiLabels,
-        error: ''
+        error: '',
       });
     } else {
       setAnalysisState({ status: 'idle', reason: '', labels: [], error: '' });
@@ -229,7 +208,7 @@ export default function App() {
   const conversationIds = useMemo(() => new Set(conversations.map((conversation) => conversation.id)), [conversations]);
   const reviewedCount = useMemo(
     () => Object.keys(annotations).filter((id) => conversationIds.has(id) && isHumanReviewed(annotations[id])).length,
-    [annotations, conversationIds]
+    [annotations, conversationIds],
   );
   const completionRate = totalCount ? Math.min(Math.round((reviewedCount / totalCount) * 100), 100) : 0;
   const progressLabel = getProgressLabel(currentIndex, totalCount);
@@ -248,12 +227,12 @@ export default function App() {
         ...existing,
         ...nextDraft,
         startedAt: existing.startedAt || new Date(reviewStartedAtRef.current).toISOString(),
-        updatedAt: getNowIso()
+        updatedAt: getNowIso(),
       });
 
       return {
         ...previous,
-        [currentConversation.id]: nextAnnotation
+        [currentConversation.id]: nextAnnotation,
       };
     });
   };
@@ -298,7 +277,8 @@ export default function App() {
     setIsSaving(true);
     const nowIso = getNowIso();
     const currentAnnotations = annotationsRef.current;
-    const startedAt = currentAnnotations[currentConversation.id]?.startedAt || new Date(reviewStartedAtRef.current).toISOString();
+    const startedAt =
+      currentAnnotations[currentConversation.id]?.startedAt || new Date(reviewStartedAtRef.current).toISOString();
     const nextAnnotations = {
       ...currentAnnotations,
       [currentConversation.id]: normalizeAnnotation({
@@ -307,8 +287,8 @@ export default function App() {
         startedAt,
         reviewedAt: nowIso,
         updatedAt: nowIso,
-        durationMs: getDurationMs(startedAt)
-      })
+        durationMs: getDurationMs(startedAt),
+      }),
     };
 
     setAnnotations(nextAnnotations);
@@ -339,7 +319,7 @@ export default function App() {
         apiKey,
         userContent,
         assistantContent,
-        model: aiModel
+        model: aiModel,
       });
 
       const nowIso = getNowIso();
@@ -352,12 +332,12 @@ export default function App() {
           aiReason: result.reason,
           aiAt: nowIso,
           startedAt: existing.startedAt || new Date(reviewStartedAtRef.current).toISOString(),
-          updatedAt: nowIso
+          updatedAt: nowIso,
         });
 
         return {
           ...previous,
-          [currentConversation.id]: nextAnnotation
+          [currentConversation.id]: nextAnnotation,
         };
       });
 
@@ -368,16 +348,18 @@ export default function App() {
           aiLabels: result.labels,
           aiReason: result.reason,
           aiAt: nowIso,
-          startedAt: annotationsRef.current[currentConversation.id]?.startedAt || new Date(reviewStartedAtRef.current).toISOString(),
-          updatedAt: nowIso
-        })
+          startedAt:
+            annotationsRef.current[currentConversation.id]?.startedAt ||
+            new Date(reviewStartedAtRef.current).toISOString(),
+          updatedAt: nowIso,
+        }),
       };
 
       setAnalysisState({
         status: 'success',
         reason: result.reason,
         labels: result.labels,
-        error: ''
+        error: '',
       });
       setSaveState('AI 建议已保存');
     } catch (analyzeError) {
@@ -385,7 +367,7 @@ export default function App() {
         status: 'error',
         reason: '',
         labels: [],
-        error: analyzeError instanceof Error ? analyzeError.message : 'AI 分析失败'
+        error: analyzeError instanceof Error ? analyzeError.message : 'AI 分析失败',
       });
     } finally {
       setIsAnalyzing(false);
@@ -473,7 +455,7 @@ export default function App() {
       format: meta.format,
       total: meta.total,
       valid: meta.valid,
-      invalid: meta.invalid
+      invalid: meta.invalid,
     });
     setSaveState(`已导入 ${meta.valid} 条对话`);
     setIsImportOpen(false);
@@ -500,7 +482,7 @@ export default function App() {
           aiReason: reason,
           aiAt: nowIso,
           startedAt: existing.startedAt || new Date(reviewStartedAtRef.current).toISOString(),
-          updatedAt: nowIso
+          updatedAt: nowIso,
         });
       });
 
@@ -529,6 +511,12 @@ export default function App() {
 
   const themeLabel = isDark ? '切换浅色模式' : '切换深色模式';
 
+  // 分析看板「去处理」：跳到工作台并定位到对应对话
+  const handleOpenConversationFromAnalytics = (index) => {
+    setCurrentIndex(Math.min(Math.max(index, 0), Math.max(conversations.length - 1, 0)));
+    navigate('/workbench');
+  };
+
   useKeyboardShortcuts({
     onNext: goNext,
     onSave: handleSave,
@@ -537,13 +525,39 @@ export default function App() {
     onToggleLabelShortcut: handleShortcutLabel,
     onSetScoreShortcut: handleScoreShortcut,
     // BUG-20：任一模态面板打开时暂停全局快捷键
-    enabled: !isImportOpen && !isBatchOpen && !isExportOpen && !isSettingsOpen && !isDataManagerOpen
+    enabled:
+      !isImportOpen && !isBatchOpen && !isExportOpen && !isSettingsOpen && !isDataManagerOpen && !isShortcutsOpen,
   });
+
+  // ? 呼出快捷键面板（与业务快捷键同一套「弹窗打开即暂停」规则）
+  useEffect(() => {
+    function handleHelpKey(event) {
+      if (event.key !== '?' || event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      const target = event.target;
+      const editable =
+        target instanceof HTMLElement &&
+        (target.isContentEditable || ['input', 'textarea', 'select'].includes(target.tagName.toLowerCase()));
+      if (editable) {
+        return;
+      }
+
+      event.preventDefault();
+      setIsShortcutsOpen((open) => !open);
+    }
+
+    window.addEventListener('keydown', handleHelpKey);
+    return () => window.removeEventListener('keydown', handleHelpKey);
+  }, []);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="glass-card rounded-3xl px-8 py-6 text-sm text-slate-600 dark:text-slate-300">正在加载对话数据...</div>
+        <div className="glass-card rounded-xl px-8 py-6 text-sm text-slate-600 dark:text-slate-300">
+          正在加载对话数据...
+        </div>
       </div>
     );
   }
@@ -551,7 +565,7 @@ export default function App() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="glass-card max-w-xl rounded-3xl px-8 py-6 text-sm text-rose-600 dark:text-rose-300">{error}</div>
+        <div className="glass-card max-w-xl rounded-xl px-8 py-6 text-sm text-rose-600 dark:text-rose-300">{error}</div>
       </div>
     );
   }
@@ -559,272 +573,292 @@ export default function App() {
   if (!currentConversation) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="glass-card rounded-3xl px-8 py-6 text-sm text-slate-600 dark:text-slate-300">暂无对话数据</div>
+        <div className="glass-card rounded-xl px-8 py-6 text-sm text-slate-600 dark:text-slate-300">暂无对话数据</div>
       </div>
     );
   }
 
-  return (
-    <main className="relative min-h-screen overflow-x-clip px-4 py-5 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-radial-soft opacity-100" />
+  const statCards = [
+    { label: '当前对话 ID', value: currentId },
+    { label: '当前进度', value: progressLabel },
+    { label: '已标注', value: `${reviewedCount} / ${totalCount}` },
+    { label: '已审核数量', value: analytics.reviewedCount },
+    { label: '回复准确率', value: `${analytics.accuracyRate}%` },
+    { label: 'AI 建议采纳率', value: `${analytics.aiAdoptionRate}%` },
+    { label: '平均审核耗时', value: formatDurationLabel(analytics.avgDurationMs) },
+  ];
 
-      <div className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-5">
-        <header className="glass-card rounded-[32px] px-5 py-4 md:px-6 md:py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-300">AI QA ANALYTICS</p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl">AI 质检分析平台</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-                AI 驱动的对话质检与分析工作台：导入对话、标签评分、AI 辅助建议、统计看板与报告导出，全流程本地完成。
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span
-                  className="max-w-full truncate rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-900 dark:text-slate-300"
-                  title={dataSource.label}
-                >
-                  数据源：{dataSource.label}（{totalCount} 条）
-                </span>
-                {dataSource.imported ? (
-                  <>
-                    <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-cyan-700 dark:text-cyan-300">已导入 · 刷新需重新导入</span>
-                    <button
-                      type="button"
-                      onClick={handleRestoreSample}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-cyan-200"
-                    >
-                      恢复示例数据
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[520px]">
-              <div className="rounded-3xl bg-slate-900 px-4 py-3 text-white dark:bg-white dark:text-slate-900">
-                <p className="text-xs text-white/70 dark:text-slate-600">当前对话 ID</p>
-                <p className="mt-1 text-lg font-semibold">{currentId}</p>
-              </div>
-              <div className="rounded-3xl bg-cyan-500 px-4 py-3 text-cyan-950">
-                <p className="text-xs">当前进度</p>
-                <p className="mt-1 text-lg font-semibold">{progressLabel}</p>
-              </div>
-              <div className="rounded-3xl bg-slate-100 px-4 py-3 text-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                <p className="text-xs text-slate-600 dark:text-slate-400">已标注</p>
-                <p className="mt-1 text-lg font-semibold">
-                  {reviewedCount} / {totalCount}
-                </p>
-              </div>
-            </div>
+  const workbench = (
+    <div className="flex min-h-0 flex-col xl:h-[calc(100vh-3.5rem)]">
+      <h1 className="sr-only">质检工作台</h1>
+      {/* 高频操作条：从页面底部上移到顶部 */}
+      <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900">
+        <ActionBar
+          onPrev={goPrev}
+          onNext={goNext}
+          onSave={handleSave}
+          onExport={handleExport}
+          onAnalyze={handleAnalyze}
+          onImport={() => setIsImportOpen(true)}
+          onOpenDataManager={() => setIsDataManagerOpen(true)}
+          onExportReport={() => setIsExportOpen(true)}
+          onBatchAnalyze={() => setIsBatchOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          canPrev={currentIndex > 0}
+          canNext={currentIndex < conversations.length - 1}
+          isAnalyzing={isAnalyzing}
+          isSaving={isSaving}
+          isBatchAnalyzing={isBatchRunning}
+          hasApiKey={hasApiKey}
+          onToggleTheme={toggleTheme}
+          themeLabel={themeLabel}
+        />
+      </div>
+      {/* 概览条：当前对话 / 进度 / 已标注 + 关键指标（工作台不再被看板挤到第二屏） */}
+      <dl className="grid shrink-0 grid-cols-2 divide-x divide-slate-200 border-b border-slate-200 bg-white sm:grid-cols-4 xl:grid-cols-7 dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+        {statCards.map((item) => (
+          <div key={item.label} className="px-4 py-2">
+            <dt className="text-[11px] text-slate-500 dark:text-slate-400">{item.label}</dt>
+            <dd className="mt-0.5 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+              {item.value}
+            </dd>
           </div>
-
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-            <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 transition-all" style={{ width: `${completionRate}%` }} />
-          </div>
-        </header>
-
-        <Suspense fallback={<DashboardSkeleton />}>
-          <Dashboard analytics={analytics} reviewerStatus={REVIEWER_PROFILE} hasApiKey={hasApiKey} isDark={isDark} />
-        </Suspense>
-
-        <div className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr] xl:items-start">
-          <div className="space-y-5 xl:sticky xl:top-5 xl:self-start">
-            <ConversationPanel conversation={currentConversation} currentIndex={currentIndex} totalCount={totalCount} />
-          </div>
-
-          <div className="space-y-5">
-            <section className="rounded-[32px] border border-white/60 bg-white/75 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75 md:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">审核工作台</h2>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">标签、评分、备注和 AI 建议都在这里完成。</p>
-                </div>
-                <div className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-                  自动保存状态：{saveState || '等待编辑'}
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">当前标签</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {draft.labels.length ? (
-                    draft.labels.map((label) => (
-                      <span key={label} className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-300">
-                        {getLabelDisplayName(label)}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-slate-600 dark:text-slate-400">尚未选择标签</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <LabelSelector selectedLabels={draft.labels} onToggleLabel={handleToggleLabel} />
-              </div>
-
-              <div className="mt-4">
-                <ScoreSelector selectedScore={draft.score || 3} onChangeScore={handleScoreChange} />
-              </div>
-
-              <div className="mt-4">
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">备注</label>
-                <textarea
-                  value={draft.comment}
-                  onChange={handleCommentChange}
-                  rows={4}
-                  placeholder="填写人工审核备注，例如：回复准确但缺少退款时效说明"
-                  className="soft-input resize-none"
-                />
-              </div>
-
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">本次审核</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-400">
-                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">评分：{draft.score || 3} 分</span>
-                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">标签：{draft.labels.length}</span>
-                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">AI 建议：{analysisState.labels.length || 0}</span>
-                    <span className="whitespace-nowrap rounded-2xl bg-slate-100 px-3 py-2 dark:bg-slate-900">耗时：{analytics.avgDurationMs ? '可统计' : '待生成'}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">配置提示</p>
-                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    AI 分析依赖 <span className="font-medium text-slate-900 dark:text-white">DeepSeek API Key</span>，当前版本只保存在本次会话中，不会写入 localStorage。
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 rounded-2xl bg-slate-100 px-3 py-3 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-                    <span>
-                      当前状态：{hasApiKey ? '已配置' : '未配置'} · 关闭页面后会失效
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={handleImportApiKey}
-                        className="rounded-full border border-cyan-200 bg-cyan-500/10 px-3 py-1.5 text-cyan-800 transition hover:border-cyan-300 hover:bg-cyan-500/15 dark:border-cyan-900 dark:text-cyan-200"
-                      >
-                        导入 API
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleClearApiKey}
-                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-slate-100"
-                      >
-                        清除
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <AnalysisPanel analysisState={analysisState} isAnalyzing={isAnalyzing} hasApiKey={hasApiKey} onAnalyze={handleAnalyze} />
-              </div>
-
-              <div className="mt-4 rounded-[28px] border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
-                <p className="font-semibold text-slate-900 dark:text-white">快捷键提示</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {QUICK_SHORTCUTS.map((item) => (
-                    <span key={item.key} className="rounded-full bg-white px-3 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-                      {item.key} · {item.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-
-        <section className="glass-card rounded-[32px] px-5 py-5 md:px-6 md:py-6">
-          <ActionBar
-            onPrev={goPrev}
-            onNext={goNext}
-            onSave={handleSave}
-            onExport={handleExport}
-            onAnalyze={handleAnalyze}
-            onImport={() => setIsImportOpen(true)}
-            onOpenDataManager={() => setIsDataManagerOpen(true)}
-            onExportReport={() => setIsExportOpen(true)}
-            onBatchAnalyze={() => setIsBatchOpen(true)}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            canPrev={currentIndex > 0}
-            canNext={currentIndex < conversations.length - 1}
-            isAnalyzing={isAnalyzing}
-            isSaving={isSaving}
-            isBatchAnalyzing={isBatchRunning}
-            hasApiKey={hasApiKey}
-            onToggleTheme={toggleTheme}
-            themeLabel={themeLabel}
+        ))}
+      </dl>
+      <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
+        <aside className="hidden w-72 shrink-0 border-r border-slate-200 lg:block dark:border-slate-800">
+          <ConversationList
+            conversations={conversations}
+            annotations={annotations}
+            currentIndex={currentIndex}
+            onSelect={(index) => setCurrentIndex(index)}
           />
+        </aside>
+
+        <section className="min-w-0 flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950">
+          <ConversationPanel conversation={currentConversation} currentIndex={currentIndex} totalCount={totalCount} />
         </section>
 
-        {isImportOpen ? (
-          <Suspense fallback={null}>
-            <ImportWizard
-              open
-              onClose={() => setIsImportOpen(false)}
-              onImport={handleImportConversations}
-            />
-          </Suspense>
-        ) : null}
+        <aside className="w-full shrink-0 space-y-3 border-t border-slate-200 bg-white p-4 xl:w-[380px] xl:overflow-y-auto xl:border-l xl:border-t-0 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">审核工作台</h2>
+            <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              自动保存状态：{saveState || '等待编辑'}
+            </span>
+          </div>
 
-        {isBatchOpen ? (
-          <Suspense fallback={null}>
-            <BatchAnalysisPanel
-              open
-              conversations={conversations}
-              annotations={annotations}
-              apiKey={apiKey}
-              model={aiModel}
-              defaultConcurrency={batchConcurrency}
-              onClose={() => setIsBatchOpen(false)}
-              onApplyResults={handleApplyBatchResults}
-              onRunningChange={setIsBatchRunning}
-            />
-          </Suspense>
-        ) : null}
+          <section className="rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="panel-header py-2">
+              <h3 className="section-title">当前标签</h3>
+            </div>
+            <div className="flex flex-wrap gap-2 p-3">
+              {draft.labels.length ? (
+                draft.labels.map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300"
+                  >
+                    {getLabelDisplayName(label)}
+                  </span>
+                ))
+              ) : (
+                <span className="muted">尚未选择标签</span>
+              )}
+            </div>
+          </section>
 
-        {isExportOpen ? (
-          <Suspense fallback={null}>
-            <ExportReportPanel
-              open
-              conversations={conversations}
-              annotations={annotations}
-              analytics={analytics}
-              onClose={() => setIsExportOpen(false)}
-            />
-          </Suspense>
-        ) : null}
+          <section className="rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="panel-header py-2">
+              <h3 className="section-title">问题标签</h3>
+              <span className="muted">快捷键 1-6</span>
+            </div>
+            <div className="p-3">
+              <LabelSelector selectedLabels={draft.labels} onToggleLabel={handleToggleLabel} />
+            </div>
+          </section>
 
-        {isSettingsOpen ? (
-          <Suspense fallback={null}>
-            <SettingsPanel
-              open
-              settings={{ apiKey, model: aiModel, concurrency: batchConcurrency }}
-              onClose={() => setIsSettingsOpen(false)}
-              onSave={handleSaveSettings}
-              onDataRestored={handleDataRestored}
-            />
-          </Suspense>
-        ) : null}
+          <ScoreSelector selectedScore={draft.score || 3} onChangeScore={handleScoreChange} />
 
-        {isDataManagerOpen ? (
-          <Suspense fallback={null}>
-            <DataManagerPanel
-              open
-              conversations={conversations}
-              annotations={annotations}
-              onClose={() => setIsDataManagerOpen(false)}
-              onJump={handleJumpToConversation}
-              onExportFiltered={handleExportFiltered}
-            />
-          </Suspense>
-        ) : null}
+          <section className="rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="panel-header py-2">
+              <h3 className="section-title">备注</h3>
+            </div>
+            <div className="p-3">
+              <textarea
+                value={draft.comment}
+                onChange={handleCommentChange}
+                rows={3}
+                placeholder="填写人工审核备注，例如：回复准确但缺少退款时效说明"
+                className="soft-input resize-none"
+              />
+            </div>
+          </section>
 
-        <footer className="pb-2 text-center text-xs text-slate-600 dark:text-slate-400">
-          本地标注会自动保存到浏览器 localStorage · 支持 JSON/CSV/Excel 导入 · 支持导出 CSV / Excel / PDF 报告 · 共 {LABELS.length} 个标签
-        </footer>
+          <section className="rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="panel-header py-2">
+              <h3 className="section-title">本次审核</h3>
+            </div>
+            <div className="flex flex-wrap gap-2 p-3 text-xs text-slate-600 dark:text-slate-300">
+              <span className="whitespace-nowrap rounded-md bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
+                评分：{draft.score || 3} 分
+              </span>
+              <span className="whitespace-nowrap rounded-md bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
+                标签：{draft.labels.length}
+              </span>
+              <span className="whitespace-nowrap rounded-md bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
+                AI 建议：{analysisState.labels.length || 0}
+              </span>
+              <span className="whitespace-nowrap rounded-md bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
+                耗时：{analytics.avgDurationMs ? '可统计' : '待生成'}
+              </span>
+            </div>
+          </section>
+
+          <AnalysisPanel
+            analysisState={analysisState}
+            isAnalyzing={isAnalyzing}
+            hasApiKey={hasApiKey}
+            onAnalyze={handleAnalyze}
+          />
+
+          <section className="rounded-lg border border-slate-200 p-3 text-xs leading-6 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium text-slate-700 dark:text-slate-200">AI 服务</span>
+              <span className="text-slate-600 dark:text-slate-400">
+                当前状态：{hasApiKey ? '已配置' : '未配置'} · 仅保存在本机浏览器
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={handleImportApiKey}
+                className="rounded-md border border-slate-300 bg-white px-2.5 py-1 font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              >
+                导入 API
+              </button>
+              <button
+                type="button"
+                onClick={handleClearApiKey}
+                className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              >
+                清除
+              </button>
+            </div>
+            {!hasApiKey ? (
+              <p className="mt-2 text-amber-700 dark:text-amber-300">
+                未配置时「AI 分析 / 批量分析」不可用；可在「设置」中保存 Key。
+              </p>
+            ) : null}
+          </section>
+        </aside>
       </div>
-    </main>
+    </div>
+  );
+
+  return (
+    <>
+      <AppShell
+        dataSourceLabel={`数据源：${dataSource.label}（${totalCount} 条）`}
+        imported={dataSource.imported}
+        onRestoreSample={handleRestoreSample}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
+      >
+        <Routes>
+          <Route path="/" element={<Navigate to="/workbench" replace />} />
+          <Route path="/workbench" element={workbench} />
+          <Route
+            path="/analytics"
+            element={
+              <Suspense
+                fallback={
+                  <div className="p-4 lg:p-6">
+                    <DashboardSkeleton />
+                  </div>
+                }
+              >
+                <AnalyticsPage
+                  analytics={analytics}
+                  reviewerStatus={REVIEWER_PROFILE}
+                  hasApiKey={hasApiKey}
+                  isDark={isDark}
+                  conversations={conversations}
+                  annotations={annotations}
+                  onOpenConversation={handleOpenConversationFromAnalytics}
+                />
+              </Suspense>
+            }
+          />
+        </Routes>
+      </AppShell>
+
+      <ShortcutsDialog open={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+
+      {isImportOpen ? (
+        <Suspense fallback={null}>
+          <ImportWizard open onClose={() => setIsImportOpen(false)} onImport={handleImportConversations} />
+        </Suspense>
+      ) : null}
+
+      {isBatchOpen ? (
+        <Suspense fallback={null}>
+          <BatchAnalysisPanel
+            open
+            conversations={conversations}
+            annotations={annotations}
+            apiKey={apiKey}
+            model={aiModel}
+            defaultConcurrency={batchConcurrency}
+            onClose={() => setIsBatchOpen(false)}
+            onApplyResults={handleApplyBatchResults}
+            onRunningChange={setIsBatchRunning}
+          />
+        </Suspense>
+      ) : null}
+
+      {isExportOpen ? (
+        <Suspense fallback={null}>
+          <ExportReportPanel
+            open
+            conversations={conversations}
+            annotations={annotations}
+            analytics={analytics}
+            onClose={() => setIsExportOpen(false)}
+          />
+        </Suspense>
+      ) : null}
+
+      {isSettingsOpen ? (
+        <Suspense fallback={null}>
+          <SettingsPanel
+            open
+            settings={{ apiKey, model: aiModel, concurrency: batchConcurrency }}
+            onClose={() => setIsSettingsOpen(false)}
+            onSave={handleSaveSettings}
+            onDataRestored={handleDataRestored}
+          />
+        </Suspense>
+      ) : null}
+
+      {isDataManagerOpen ? (
+        <Suspense fallback={null}>
+          <DataManagerPanel
+            open
+            conversations={conversations}
+            annotations={annotations}
+            onClose={() => setIsDataManagerOpen(false)}
+            onJump={handleJumpToConversation}
+            onExportFiltered={handleExportFiltered}
+          />
+        </Suspense>
+      ) : null}
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }

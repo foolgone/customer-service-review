@@ -8,7 +8,7 @@ import {
   hasActiveFilters,
   normalizeFilters,
   paginate,
-  summarizeConversations
+  summarizeConversations,
 } from '../../lib/filters';
 import { formatLabelList, toLabelArray } from '../../lib/labels';
 import { isHumanReviewed } from '../../lib/analytics';
@@ -36,19 +36,30 @@ function StatusBadge({ reviewed, hasAi }) {
     <div className="flex flex-wrap gap-1">
       <span
         className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-          reviewed ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200/70 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+          reviewed
+            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+            : 'bg-slate-200/70 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
         }`}
       >
         {reviewed ? '已审核' : '未审核'}
       </span>
       {hasAi ? (
-        <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-700 dark:text-cyan-300">AI</span>
+        <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-300">
+          AI
+        </span>
       ) : null}
     </div>
   );
 }
 
-export default function DataManagerPanel({ open, conversations = [], annotations = {}, onClose, onJump, onExportFiltered }) {
+export default function DataManagerPanel({
+  open,
+  conversations = [],
+  annotations = {},
+  onClose,
+  onJump,
+  onExportFiltered,
+}) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -58,13 +69,13 @@ export default function DataManagerPanel({ open, conversations = [], annotations
   const deferredKeyword = useDeferredValue(filters.keyword);
   const deferredFilters = useMemo(
     () => normalizeFilters({ ...filters, keyword: deferredKeyword }),
-    [filters, deferredKeyword]
+    [filters, deferredKeyword],
   );
 
   const stats = useMemo(() => summarizeConversations(conversations, annotations), [conversations, annotations]);
   const filtered = useMemo(
     () => filterConversations(conversations, annotations, deferredFilters),
-    [conversations, annotations, deferredFilters]
+    [conversations, annotations, deferredFilters],
   );
   const paged = useMemo(() => paginate(filtered, page, PAGE_SIZE), [filtered, page]);
   // BUG-33：输入框非空（哪怕只有空格）也提供「清空筛选」入口
@@ -124,18 +135,22 @@ export default function DataManagerPanel({ open, conversations = [], annotations
         role="dialog"
         aria-modal="true"
         aria-labelledby={TITLE_ID}
-        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Data</p>
-            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">数据管理</h2>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">筛选/搜索当前数据集，查看导入历史，并跳转到指定对话。</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600 dark:text-blue-300">Data</p>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              数据管理
+            </h2>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+              筛选/搜索当前数据集，查看导入历史，并跳转到指定对话。
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-white"
+            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:text-white"
           >
             关闭
           </button>
@@ -148,9 +163,9 @@ export default function DataManagerPanel({ open, conversations = [], annotations
               { label: '已审核', value: stats.reviewed },
               { label: '未审核', value: stats.pending },
               { label: '有 AI 建议', value: stats.withAi },
-              { label: '问题对话', value: stats.problem }
+              { label: '问题对话', value: stats.problem },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-slate-100 px-3 py-2 text-center dark:bg-slate-950/60">
+              <div key={item.label} className="rounded-lg bg-slate-100 px-3 py-2 text-center dark:bg-slate-950">
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.value}</p>
                 <p className="text-xs text-slate-600 dark:text-slate-400">{item.label}</p>
               </div>
@@ -186,7 +201,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                     setFilters(DEFAULT_FILTERS);
                     setPage(1);
                   }}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
                 >
                   清空筛选
                 </button>
@@ -205,8 +220,8 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                     aria-pressed={selected}
                     className={`rounded-full border px-3 py-1 text-xs transition ${
                       selected
-                        ? 'border-cyan-400 bg-cyan-500/10 text-cyan-700 dark:text-cyan-200'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-300 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300'
+                        ? 'border-blue-400 bg-blue-500/10 text-blue-700 dark:text-blue-200'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
                     }`}
                   >
                     {label.label}
@@ -227,8 +242,8 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                     aria-pressed={selected}
                     className={`rounded-full border px-3 py-1 text-xs transition ${
                       selected
-                        ? 'border-cyan-400 bg-cyan-500/10 text-cyan-700 dark:text-cyan-200'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-300 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300'
+                        ? 'border-blue-400 bg-blue-500/10 text-blue-700 dark:text-blue-200'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
                     }`}
                   >
                     {score} 分
@@ -247,13 +262,16 @@ export default function DataManagerPanel({ open, conversations = [], annotations
             </div>
 
             <div
-              className="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800"
+              className="mt-2 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800"
               tabIndex={0}
               role="region"
               aria-label="对话筛选结果表格（可横向滚动）"
             >
-              <table aria-label="对话筛选结果" className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
-                <thead className="bg-slate-50 dark:bg-slate-950/60">
+              <table
+                aria-label="对话筛选结果"
+                className="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800"
+              >
+                <thead className="bg-slate-50 dark:bg-slate-950">
                   <tr>
                     <th className="whitespace-nowrap px-3 py-2 font-medium text-slate-600 dark:text-slate-400">ID</th>
                     <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">用户消息</th>
@@ -272,11 +290,15 @@ export default function DataManagerPanel({ open, conversations = [], annotations
 
                       return (
                         <tr key={conversation.id} className="align-top">
-                          <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-700 dark:text-slate-200">{conversation.id}</td>
+                          <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-700 dark:text-slate-200">
+                            {conversation.id}
+                          </td>
                           <td className="max-w-[22rem] px-3 py-2 text-slate-600 dark:text-slate-300">
                             <span className="line-clamp-2">{getConversationText(conversation, 'user') || '-'}</span>
                           </td>
-                          <td className="whitespace-nowrap px-3 py-2 text-slate-600 dark:text-slate-300">{formatLabelList(labels) || '-'}</td>
+                          <td className="whitespace-nowrap px-3 py-2 text-slate-600 dark:text-slate-300">
+                            {formatLabelList(labels) || '-'}
+                          </td>
                           <td className="whitespace-nowrap px-3 py-2 text-slate-600 dark:text-slate-300">
                             {Number(annotation.score) ? `${Number(annotation.score)} 分` : '-'}
                           </td>
@@ -287,7 +309,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                             <button
                               type="button"
                               onClick={() => onJump?.(conversation.id)}
-                              className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+                              className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
                             >
                               查看 #{conversation.id}
                             </button>
@@ -315,7 +337,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                   type="button"
                   onClick={() => setPage((current) => Math.max(current - 1, 1))}
                   disabled={paged.page <= 1}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
                 >
                   上一页
                 </button>
@@ -323,7 +345,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                   type="button"
                   onClick={() => setPage((current) => Math.min(current + 1, paged.pageCount))}
                   disabled={paged.page >= paged.pageCount}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
                 >
                   下一页
                 </button>
@@ -341,9 +363,11 @@ export default function DataManagerPanel({ open, conversations = [], annotations
                 {importHistory.map((item, index) => (
                   <li
                     key={`${item.fileName}-${index}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-50 px-3 py-2 dark:bg-slate-950/60"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-950"
                   >
-                    <span className="min-w-0 truncate font-medium text-slate-700 dark:text-slate-200">{item.fileName}</span>
+                    <span className="min-w-0 truncate font-medium text-slate-700 dark:text-slate-200">
+                      {item.fileName}
+                    </span>
                     <span className="shrink-0 text-slate-600 dark:text-slate-400">
                       {item.format} · 有效 {item.valid}/{item.total} · {formatHistoryTime(item.importedAt)}
                     </span>
@@ -373,15 +397,11 @@ export default function DataManagerPanel({ open, conversations = [], annotations
               type="button"
               onClick={handleExportFiltered}
               disabled={!filtered.length}
-              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+              className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
             >
               导出筛选结果 CSV
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
-            >
+            <button type="button" onClick={onClose} className="primary-button bg-blue-700 text-white hover:bg-blue-800">
               关闭
             </button>
           </div>

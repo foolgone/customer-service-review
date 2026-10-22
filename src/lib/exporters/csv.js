@@ -31,13 +31,24 @@ export function conversationsToCsvRows(conversations, annotations) {
       Array.isArray(annotation.aiLabels) ? annotation.aiLabels.join('|') : '',
       annotation.aiReason || '',
       annotation.reviewedAt || annotation.updatedAt || '',
-      annotation.durationMs || 0
+      annotation.durationMs || 0,
     ];
   });
 }
 
 export function exportConversationsToCsv(conversations, annotations, fileName = getCsvFileName()) {
-  const header = ['id', 'user', 'assistant', 'labels', 'score', 'comment', 'ai_labels', 'ai_reason', 'reviewed_at', 'duration_ms'];
+  const header = [
+    'id',
+    'user',
+    'assistant',
+    'labels',
+    'score',
+    'comment',
+    'ai_labels',
+    'ai_reason',
+    'reviewed_at',
+    'duration_ms',
+  ];
   const rows = conversationsToCsvRows(conversations, annotations).map((row) => row.map(escapeCsvValue).join(','));
   const csv = ['\ufeff', [header.map(escapeCsvValue).join(','), ...rows].join('\n')].join('');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

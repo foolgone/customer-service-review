@@ -16,7 +16,7 @@ export function useKeyboardShortcuts({
   onToggleTheme,
   onToggleLabelShortcut,
   onSetScoreShortcut,
-  enabled = true
+  enabled = true,
 }) {
   useEffect(() => {
     function handleKeyDown(event) {

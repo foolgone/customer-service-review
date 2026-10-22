@@ -92,7 +92,7 @@ function getStorageInfo() {
     total,
     percent,
     usedMB: (used / 1024 / 1024).toFixed(2),
-    totalMB: (total / 1024 / 1024).toFixed(2)
+    totalMB: (total / 1024 / 1024).toFixed(2),
   };
 }
 
@@ -107,7 +107,7 @@ export function saveAnnotation(conversationId, annotation) {
   const annotations = getAnnotations();
   annotations[conversationId] = {
     ...annotation,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
   setItem(STORAGE_KEYS.annotations, annotations);
 }
@@ -155,13 +155,13 @@ export function clearAnnotations() {
 export function normalizeAnnotation(annotation) {
   const merged = {
     ...DEFAULT_ANNOTATION,
-    ...(annotation || {})
+    ...(annotation || {}),
   };
 
   return {
     ...merged,
     labels: toLabelArray(merged.labels),
-    aiLabels: toLabelArray(merged.aiLabels)
+    aiLabels: toLabelArray(merged.aiLabels),
   };
 }
 
@@ -253,7 +253,7 @@ export function getConfig() {
     apiEndpoint: 'https://api.deepseek.com/chat/completions',
     temperature: 0.7,
     maxTokens: 2000,
-    autoSave: true
+    autoSave: true,
   });
 }
 
@@ -286,7 +286,7 @@ export function addImportHistory(record) {
   const history = getImportHistory();
   history.unshift({
     ...record,
-    importedAt: new Date().toISOString()
+    importedAt: new Date().toISOString(),
   });
 
   // 只保留最近 20 条
@@ -341,7 +341,7 @@ export function exportAllData() {
     config: pickBackupConfig(getConfig()),
     importHistory: getImportHistory(),
     exportedAt: new Date().toISOString(),
-    note: 'API Key 不包含在备份中，恢复后需在设置中重新填写'
+    note: 'API Key 不包含在备份中，恢复后需在设置中重新填写',
   };
 }
 
@@ -371,7 +371,9 @@ export function importAllData(data, overwrite = false) {
   }
 
   const config =
-    data.config && typeof data.config === 'object' && !Array.isArray(data.config) ? pickBackupConfig(data.config) : null;
+    data.config && typeof data.config === 'object' && !Array.isArray(data.config)
+      ? pickBackupConfig(data.config)
+      : null;
 
   if (config && Object.keys(config).length) {
     if (overwrite) {
@@ -422,5 +424,5 @@ export const storage = {
   getItem,
   removeItem,
   clear,
-  getStorageInfo
+  getStorageInfo,
 };

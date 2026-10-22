@@ -52,16 +52,16 @@ describe('LabelSelector', () => {
     expect(onToggleLabel.mock.calls.map(([value]) => value)).toEqual(LABELS.map((item) => item.value));
   });
 
-  it('selectedLabels 含某标签时：该按钮激活（ring-4 / bg-cyan-500/10），其余未激活', () => {
+  it('selectedLabels 含某标签时：该按钮激活（ring-4 / bg-blue-500/10），其余未激活', () => {
     render(<LabelSelector selectedLabels={['risky']} onToggleLabel={vi.fn()} />);
 
     const activeButton = screen.getByRole('button', { name: /风险回复/ });
     expect(activeButton).toHaveClass('ring-4');
-    expect(activeButton).toHaveClass('bg-cyan-500/10');
+    expect(activeButton).toHaveClass('bg-blue-500/10');
 
     const inactiveButton = screen.getByRole('button', { name: /回复准确/ });
     expect(inactiveButton).not.toHaveClass('ring-4');
-    expect(inactiveButton).not.toHaveClass('bg-cyan-500/10');
+    expect(inactiveButton).not.toHaveClass('bg-blue-500/10');
 
     const ringButtons = screen.getAllByRole('button').filter((button) => button.className.includes('ring-4'));
     expect(ringButtons).toHaveLength(1);

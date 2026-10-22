@@ -26,7 +26,7 @@ export async function parseExcel(file, options = {}) {
         data: [],
         errors: ['Excel 文件中没有工作表'],
         sheets: [],
-        preview: []
+        preview: [],
       };
     }
 
@@ -40,7 +40,7 @@ export async function parseExcel(file, options = {}) {
         data: [],
         errors: [`找不到工作表：${sheetName}`],
         sheets: sheetNames,
-        preview: []
+        preview: [],
       };
     }
 
@@ -53,7 +53,7 @@ export async function parseExcel(file, options = {}) {
         data: [],
         errors: ['Excel 工作表为空'],
         sheets: sheetNames,
-        preview: []
+        preview: [],
       };
     }
 
@@ -84,10 +84,10 @@ export async function parseExcel(file, options = {}) {
       data: valid,
       rows,
       skippedRows,
-      errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
+      errors: invalid.map((item) => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
       sheets: sheetNames,
       preview,
-      fieldMapping
+      fieldMapping,
     };
   } catch (error) {
     return {
@@ -95,7 +95,7 @@ export async function parseExcel(file, options = {}) {
       data: [],
       errors: [`解析失败：${error.message}`],
       sheets: [],
-      preview: []
+      preview: [],
     };
   }
 }
@@ -109,7 +109,7 @@ function autoDetectFieldMapping(firstRow) {
   const mapping = {
     id: null,
     user: null,
-    assistant: null
+    assistant: null,
   };
 
   const columns = Object.keys(firstRow);
@@ -117,7 +117,7 @@ function autoDetectFieldMapping(firstRow) {
   // ID 字段检测
   const idCandidates = ['id', 'ID', '编号', '对话ID', 'conversation_id', 'conv_id'];
   for (const col of columns) {
-    if (idCandidates.some(candidate => col.includes(candidate))) {
+    if (idCandidates.some((candidate) => col.includes(candidate))) {
       mapping.id = col;
       break;
     }
@@ -126,7 +126,7 @@ function autoDetectFieldMapping(firstRow) {
   // 用户消息字段检测
   const userCandidates = ['user', 'USER', '用户', '用户消息', '客户', '问题'];
   for (const col of columns) {
-    if (userCandidates.some(candidate => col.includes(candidate))) {
+    if (userCandidates.some((candidate) => col.includes(candidate))) {
       mapping.user = col;
       break;
     }
@@ -135,7 +135,7 @@ function autoDetectFieldMapping(firstRow) {
   // 客服回复字段检测
   const assistantCandidates = ['assistant', 'ASSISTANT', '客服', '客服回复', '回复', 'agent'];
   for (const col of columns) {
-    if (assistantCandidates.some(candidate => col.includes(candidate))) {
+    if (assistantCandidates.some((candidate) => col.includes(candidate))) {
       mapping.assistant = col;
       break;
     }
@@ -171,12 +171,12 @@ function rowToConversation(row, fieldMapping, index) {
       id,
       turns: [
         { role: 'user', content: userContent },
-        { role: 'assistant', content: assistantContent }
+        { role: 'assistant', content: assistantContent },
       ],
       metadata: {
         source: 'excel',
-        rowIndex: index
-      }
+        rowIndex: index,
+      },
     };
   } catch (error) {
     console.warn(`第 ${index + 1} 行转换失败:`, error);
@@ -208,7 +208,7 @@ export function reMapExcelData(rows, fieldMapping) {
       return {
         success: false,
         data: [],
-        errors: mappingValidation.errors
+        errors: mappingValidation.errors,
       };
     }
 
@@ -232,13 +232,13 @@ export function reMapExcelData(rows, fieldMapping) {
       success: true,
       data: valid,
       skippedRows,
-      errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
+      errors: invalid.map((item) => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
     };
   } catch (error) {
     return {
       success: false,
       data: [],
-      errors: [`重新映射失败：${error.message}`]
+      errors: [`重新映射失败：${error.message}`],
     };
   }
 }

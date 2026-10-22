@@ -82,7 +82,7 @@ export function buildAnalytics(conversations, annotations) {
       id,
       ...annotation,
       labels: toLabelArray(annotation?.labels),
-      timestamp: getTimestamp(annotation || {})
+      timestamp: getTimestamp(annotation || {}),
     }))
     .filter((record) => conversationMap.has(record.id))
     .filter((record) => isHumanReviewed(record));
@@ -112,13 +112,13 @@ export function buildAnalytics(conversations, annotations) {
     name: item.label,
     value: labelCounts[item.value] || 0,
     shortcut: item.shortcut,
-    color: item.color
+    color: item.color,
   }));
 
   const scoreDistribution = SCORE_LEVELS.map((item) => ({
     name: item.label,
     value: scoreCounts[String(item.value)] || 0,
-    shortcut: item.shortcut
+    shortcut: item.shortcut,
   }));
 
   const accurateCount = records.filter((record) => (record.labels || []).includes('accurate')).length;
@@ -151,7 +151,7 @@ export function buildAnalytics(conversations, annotations) {
 
     return {
       date: `${current.getMonth() + 1}/${current.getDate()}`,
-      count
+      count,
     };
   });
 
@@ -172,7 +172,7 @@ export function buildAnalytics(conversations, annotations) {
         reviewedAt: record.reviewedAt || record.updatedAt || '',
         timeLabel: formatDateTime(record.reviewedAt || record.updatedAt || Date.now()),
         durationLabel: formatDuration(record.durationMs),
-        isAccepted: sameLabelSet(record.labels, record.aiLabels)
+        isAccepted: sameLabelSet(record.labels, record.aiLabels),
       };
     });
 
@@ -181,7 +181,7 @@ export function buildAnalytics(conversations, annotations) {
     .sort((left, right) => right.value - left.value)
     .map((item) => ({
       ...item,
-      rate: reviewedCount ? Math.round((item.value / reviewedCount) * 100) : 0
+      rate: reviewedCount ? Math.round((item.value / reviewedCount) * 100) : 0,
     }));
 
   return {
@@ -203,7 +203,7 @@ export function buildAnalytics(conversations, annotations) {
     accurateCount,
     riskyCount,
     hallucinationCount,
-    impoliteCount
+    impoliteCount,
   };
 }
 

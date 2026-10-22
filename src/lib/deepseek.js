@@ -36,10 +36,12 @@ ${assistantContent}
 }
 
 function extractJsonText(text) {
-  const trimmed = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-  const jsonStartCandidates = ['{', '[']
-    .map((token) => trimmed.indexOf(token))
-    .filter((index) => index >= 0);
+  const trimmed = text
+    .trim()
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/, '')
+    .trim();
+  const jsonStartCandidates = ['{', '['].map((token) => trimmed.indexOf(token)).filter((index) => index >= 0);
 
   if (!jsonStartCandidates.length) {
     return trimmed;
@@ -63,11 +65,13 @@ export function parseDeepSeekResponse(content) {
   const labels = Array.isArray(parsed.labels)
     ? parsed.labels.filter((label) => typeof label === 'string' && ALLOWED_LABELS.has(label))
     : [];
-  const reason = [parsed.reason, parsed.analysis, parsed.explanation, parsed.comment]
-    .find((value) => typeof value === 'string' && value.trim()) || '';
+  const reason =
+    [parsed.reason, parsed.analysis, parsed.explanation, parsed.comment].find(
+      (value) => typeof value === 'string' && value.trim(),
+    ) || '';
 
   return {
     labels,
-    reason
+    reason,
   };
 }

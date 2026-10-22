@@ -5,7 +5,7 @@
 
 export const A4 = {
   widthMm: 210,
-  heightMm: 297
+  heightMm: 297,
 };
 
 /**
@@ -21,7 +21,7 @@ export const A4 = {
 export function computePdfPages(
   canvasWidthPx,
   canvasHeightPx,
-  { pageWidthMm = A4.widthMm, pageHeightMm = A4.heightMm, marginMm = 10 } = {}
+  { pageWidthMm = A4.widthMm, pageHeightMm = A4.heightMm, marginMm = 10 } = {},
 ) {
   if (!(canvasWidthPx > 0) || !(canvasHeightPx > 0)) {
     throw new Error('截图尺寸无效，无法生成 PDF');

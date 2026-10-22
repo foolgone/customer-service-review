@@ -21,7 +21,7 @@ export function createDeepSeekProvider({
   apiKey,
   model = DEEPSEEK_DEFAULT_MODEL,
   endpoint = DEEPSEEK_ENDPOINT,
-  fetchImpl = (...args) => fetch(...args)
+  fetchImpl = (...args) => fetch(...args),
 } = {}) {
   if (!apiKey) {
     throw new Error('请先配置 DeepSeek API Key');
@@ -44,16 +44,16 @@ export function createDeepSeekProvider({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model,
           temperature: 0,
           messages: [
             { role: 'system', content: JSON_ONLY_SYSTEM_PROMPT },
-            { role: 'user', content: buildDeepSeekPrompt(userContent, assistantContent) }
-          ]
-        })
+            { role: 'user', content: buildDeepSeekPrompt(userContent, assistantContent) },
+          ],
+        }),
       });
 
       if (!response.ok) {
@@ -69,7 +69,7 @@ export function createDeepSeekProvider({
       }
 
       return parseDeepSeekResponse(content);
-    }
+    },
   };
 }
 
@@ -79,8 +79,8 @@ export const AI_PROVIDERS = {
     id: 'deepseek',
     label: 'DeepSeek',
     defaultModel: DEEPSEEK_DEFAULT_MODEL,
-    create: createDeepSeekProvider
-  }
+    create: createDeepSeekProvider,
+  },
 };
 
 /**

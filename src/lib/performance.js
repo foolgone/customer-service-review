@@ -7,5 +7,5 @@
  */
 export const CHART_ANIMATION_CONFIG = {
   isAnimationActive: false,
-  animationDuration: 0
+  animationDuration: 0,
 };

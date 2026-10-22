@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { AI_MODEL_OPTIONS, DEFAULT_SETTINGS, loadSettings, normalizeSettings } from '../../lib/settings';
-import {
-  clearAnnotations,
-  exportAllData,
-  getConfig,
-  getImportHistory,
-  importAllData
-} from '../../lib/storage';
+import { clearAnnotations, exportAllData, getConfig, getImportHistory, importAllData } from '../../lib/storage';
 
 const TITLE_ID = 'settings-panel-title';
 const CONCURRENCY_OPTIONS = [1, 2, 3, 4, 5];
@@ -95,7 +89,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
       if (!result.restored) {
         setMessage({
           type: 'error',
-          text: result.reason === 'invalid' ? '备份格式无效，请选择本应用导出的备份文件' : '备份中没有可恢复的数据'
+          text: result.reason === 'invalid' ? '备份格式无效，请选择本应用导出的备份文件' : '备份中没有可恢复的数据',
         });
         return;
       }
@@ -142,18 +136,22 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
         role="dialog"
         aria-modal="true"
         aria-labelledby={TITLE_ID}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/60 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.6)] dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600 dark:text-cyan-300">Settings</p>
-            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">设置</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600 dark:text-blue-300">
+              Settings
+            </p>
+            <h2 id={TITLE_ID} className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              设置
+            </h2>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">AI 服务配置与本地数据管理。</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:text-white"
+            className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:text-white"
           >
             关闭
           </button>
@@ -170,7 +168,9 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
 
             <div className="mt-3 space-y-3">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">DeepSeek API Key</span>
+                <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  DeepSeek API Key
+                </span>
                 <input
                   type="password"
                   value={apiKey}
@@ -198,7 +198,9 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
                 </label>
 
                 <label className="block">
-                  <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">批量分析默认并发</span>
+                  <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                    批量分析默认并发
+                  </span>
                   <select
                     value={concurrency}
                     onChange={(event) => setConcurrency(Number(event.target.value))}
@@ -214,19 +216,23 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={handleSave} className="primary-button bg-cyan-700 text-white hover:bg-cyan-800">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className="primary-button bg-blue-700 text-white hover:bg-blue-800"
+                >
                   保存设置
                 </button>
                 <button
                   type="button"
                   onClick={handleClearKey}
-                  className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+                  className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
                 >
                   清除 API Key
                 </button>
               </div>
 
-              <p className="rounded-2xl bg-amber-500/10 px-3 py-2 text-xs leading-6 text-amber-800 dark:text-amber-200">
+              <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs leading-6 text-amber-800 dark:text-amber-200">
                 提示：API Key 仅保存在本机浏览器 localStorage（配置项 `cs-review-config-v1`），不会上传到任何服务器，
                 也不会被打进前端构建产物。请勿在公用电脑上保存。
               </p>
@@ -235,20 +241,22 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
 
           <section className="border-t border-slate-200 pt-5 dark:border-slate-800">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white">数据管理</h3>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">标注与配置都在本机浏览器，可导出备份或恢复。</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+              标注与配置都在本机浏览器，可导出备份或恢复。
+            </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={handleExportBackup}
-                className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+                className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
               >
                 导出标注备份
               </button>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+                className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
               >
                 导入备份
               </button>
@@ -259,19 +267,16 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
               >
                 清空本地标注
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                className="hidden"
-                onChange={handleImportBackup}
-              />
+              <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImportBackup} />
             </div>
 
             <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">
-              当前配置版本：{storedConfig?.autoSave ? '自动保存开启' : '自动保存关闭'} ｜ 导入历史 {importHistoryCount} 条
+              当前配置版本：{storedConfig?.autoSave ? '自动保存开启' : '自动保存关闭'} ｜ 导入历史 {importHistoryCount}{' '}
+              条
             </p>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">备份只包含标注、主题与 AI 配置（不含 API Key）</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+              备份只包含标注、主题与 AI 配置（不含 API Key）
+            </p>
           </section>
         </div>
 
@@ -290,7 +295,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
           <button
             type="button"
             onClick={onClose}
-            className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+            className="primary-button border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
           >
             关闭
           </button>

@@ -25,7 +25,7 @@ export async function parseCSV(file, options = {}) {
               success: false,
               data: [],
               errors: ['CSV 文件为空'],
-              preview: []
+              preview: [],
             });
             return;
           }
@@ -58,19 +58,19 @@ export async function parseCSV(file, options = {}) {
             rows: results.data,
             skippedRows,
             errors: [
-              ...results.errors.map(err => `解析错误：${err.message}`),
-              ...invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
+              ...results.errors.map((err) => `解析错误：${err.message}`),
+              ...invalid.map((item) => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
             ],
             preview,
             fieldMapping,
-            meta: results.meta
+            meta: results.meta,
           });
         } catch (error) {
           resolve({
             success: false,
             data: [],
             errors: [`解析失败：${error.message}`],
-            preview: []
+            preview: [],
           });
         }
       },
@@ -79,9 +79,9 @@ export async function parseCSV(file, options = {}) {
           success: false,
           data: [],
           errors: [`文件读取失败：${error.message}`],
-          preview: []
+          preview: [],
         });
-      }
+      },
     });
   });
 }
@@ -95,7 +95,7 @@ function autoDetectFieldMapping(firstRow) {
   const mapping = {
     id: null,
     user: null,
-    assistant: null
+    assistant: null,
   };
 
   const columns = Object.keys(firstRow);
@@ -103,7 +103,7 @@ function autoDetectFieldMapping(firstRow) {
   // ID 字段检测
   const idCandidates = ['id', 'ID', '编号', 'conversation_id', 'conv_id', 'number', 'no'];
   for (const col of columns) {
-    if (idCandidates.some(candidate => col.toLowerCase().includes(candidate.toLowerCase()))) {
+    if (idCandidates.some((candidate) => col.toLowerCase().includes(candidate.toLowerCase()))) {
       mapping.id = col;
       break;
     }
@@ -112,7 +112,7 @@ function autoDetectFieldMapping(firstRow) {
   // 用户消息字段检测
   const userCandidates = ['user', 'USER', '用户', '客户', 'customer', 'question', '问题'];
   for (const col of columns) {
-    if (userCandidates.some(candidate => col.toLowerCase().includes(candidate.toLowerCase()))) {
+    if (userCandidates.some((candidate) => col.toLowerCase().includes(candidate.toLowerCase()))) {
       mapping.user = col;
       break;
     }
@@ -121,7 +121,7 @@ function autoDetectFieldMapping(firstRow) {
   // 客服回复字段检测
   const assistantCandidates = ['assistant', 'ASSISTANT', '客服', '回复', 'agent', 'reply', 'answer', 'response'];
   for (const col of columns) {
-    if (assistantCandidates.some(candidate => col.toLowerCase().includes(candidate.toLowerCase()))) {
+    if (assistantCandidates.some((candidate) => col.toLowerCase().includes(candidate.toLowerCase()))) {
       mapping.assistant = col;
       break;
     }
@@ -157,12 +157,12 @@ function rowToConversation(row, fieldMapping, index) {
       id,
       turns: [
         { role: 'user', content: userContent },
-        { role: 'assistant', content: assistantContent }
+        { role: 'assistant', content: assistantContent },
       ],
       metadata: {
         source: 'csv',
-        rowIndex: index
-      }
+        rowIndex: index,
+      },
     };
   } catch (error) {
     console.warn(`第 ${index + 1} 行转换失败:`, error);
@@ -187,11 +187,11 @@ export function getAvailableColumns(rows) {
  */
 export function validateMapping(mapping) {
   const required = ['id', 'user', 'assistant'];
-  const missing = required.filter(field => !mapping[field]);
+  const missing = required.filter((field) => !mapping[field]);
 
   return {
     valid: missing.length === 0,
-    missing
+    missing,
   };
 }
 
@@ -209,7 +209,7 @@ export function reMapCSVData(rows, fieldMapping) {
       return {
         success: false,
         data: [],
-        errors: [`缺少必填字段映射：${mappingValidation.missing.join(', ')}`]
+        errors: [`缺少必填字段映射：${mappingValidation.missing.join(', ')}`],
       };
     }
 
@@ -233,13 +233,13 @@ export function reMapCSVData(rows, fieldMapping) {
       success: true,
       data: valid,
       skippedRows,
-      errors: invalid.map(item => `第 ${item.index + 1} 行：${item.errors.join(', ')}`)
+      errors: invalid.map((item) => `第 ${item.index + 1} 行：${item.errors.join(', ')}`),
     };
   } catch (error) {
     return {
       success: false,
       data: [],
-      errors: [`重新映射失败：${error.message}`]
+      errors: [`重新映射失败：${error.message}`],
     };
   }
 }

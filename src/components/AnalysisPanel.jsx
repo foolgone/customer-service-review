@@ -3,7 +3,7 @@ import { LABELS } from '../lib/constants';
 
 const TAB_LABELS = [
   { value: 'suggestion', label: 'AI 建议' },
-  { value: 'reason', label: 'AI 理由' }
+  { value: 'reason', label: 'AI 理由' },
 ];
 
 const LABEL_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
@@ -39,7 +39,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
   }, [analysisState.status]);
 
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white/75 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75">
+    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800/70 dark:bg-slate-900">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
@@ -50,7 +50,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
           <button
             type="button"
             onClick={() => setExpanded((current) => !current)}
-            className="whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"
+            className="whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
           >
             {expanded ? '收起' : '展开'}
           </button>
@@ -58,7 +58,7 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
             type="button"
             onClick={onAnalyze}
             disabled={isAnalyzing || !hasApiKey}
-            className="whitespace-nowrap rounded-full bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-blue-700 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isAnalyzing ? '分析中...' : '重新分析'}
           </button>
@@ -87,12 +87,17 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
           {analysisState.status === 'success' ? (
             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
               {activeTab === 'suggestion' ? (
-                <div className="rounded-2xl border border-cyan-200 bg-cyan-500/5 p-4 dark:border-cyan-900/60 dark:bg-cyan-500/10">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-300">建议标签</p>
+                <div className="rounded-lg border border-blue-200 bg-blue-500/5 p-4 dark:border-blue-900/60 dark:bg-blue-500/10">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
+                    建议标签
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {analysisState.labels.length ? (
                       analysisState.labels.map((label) => (
-                        <span key={label} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-cyan-700 dark:bg-slate-900 dark:text-cyan-200">
+                        <span
+                          key={label}
+                          className="rounded-full bg-white px-3 py-1 text-xs font-medium text-blue-700 dark:bg-slate-900 dark:text-blue-200"
+                        >
                           {getLabelName(label)}
                         </span>
                       ))
@@ -102,8 +107,10 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">判断理由</p>
+                <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">
+                    判断理由
+                  </p>
                   <p className="mt-2 leading-7 text-slate-700 dark:text-slate-200">
                     {analysisState.reason || '模型未返回理由，请检查返回内容是否包含 reason / analysis / explanation。'}
                   </p>
@@ -121,9 +128,13 @@ export default function AnalysisPanel({ analysisState, isAnalyzing, hasApiKey, o
           )}
         </div>
       ) : (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
           <span>折叠模式 · AI 仅保留摘要</span>
-          <span>{analysisState.status === 'success' ? `已生成 ${analysisState.labels.length || 0} 个建议标签` : '按需展开查看'}</span>
+          <span>
+            {analysisState.status === 'success'
+              ? `已生成 ${analysisState.labels.length || 0} 个建议标签`
+              : '按需展开查看'}
+          </span>
         </div>
       )}
     </section>

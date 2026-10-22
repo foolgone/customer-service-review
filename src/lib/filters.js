@@ -10,14 +10,14 @@ export const STATUS_OPTIONS = [
   { value: 'all', label: '全部' },
   { value: 'reviewed', label: '已审核' },
   { value: 'pending', label: '未审核' },
-  { value: 'ai', label: '有 AI 建议' }
+  { value: 'ai', label: '有 AI 建议' },
 ];
 
 export const DEFAULT_FILTERS = {
   keyword: '',
   labels: [],
   scores: [],
-  status: 'all'
+  status: 'all',
 };
 
 function getConversationText(conversation, role) {
@@ -34,7 +34,7 @@ export function normalizeFilters(filters = {}) {
     keyword: typeof filters.keyword === 'string' ? filters.keyword : '',
     labels: Array.isArray(filters.labels) ? filters.labels.filter((item) => typeof item === 'string') : [],
     scores: Array.isArray(filters.scores) ? filters.scores.map(Number).filter((item) => Number.isFinite(item)) : [],
-    status: STATUS_OPTIONS.some((item) => item.value === filters.status) ? filters.status : DEFAULT_FILTERS.status
+    status: STATUS_OPTIONS.some((item) => item.value === filters.status) ? filters.status : DEFAULT_FILTERS.status,
   };
 }
 
@@ -46,7 +46,12 @@ export function normalizeFilters(filters = {}) {
 export function hasActiveFilters(filters = {}) {
   const normalized = normalizeFilters(filters);
 
-  return Boolean(normalized.keyword.trim()) || normalized.labels.length > 0 || normalized.scores.length > 0 || normalized.status !== 'all';
+  return (
+    Boolean(normalized.keyword.trim()) ||
+    normalized.labels.length > 0 ||
+    normalized.scores.length > 0 ||
+    normalized.status !== 'all'
+  );
 }
 
 /**
@@ -70,7 +75,7 @@ export function filterConversations(conversations = [], annotations = {}, filter
       const haystack = [
         conversation.id,
         getConversationText(conversation, 'user'),
-        getConversationText(conversation, 'assistant')
+        getConversationText(conversation, 'assistant'),
       ]
         .join(' ')
         .toLowerCase();
@@ -144,7 +149,7 @@ export function summarizeConversations(conversations = [], annotations = {}) {
     reviewed,
     pending: Math.max(conversations.length - reviewed, 0),
     withAi,
-    problem
+    problem,
   };
 }
 
@@ -165,6 +170,6 @@ export function paginate(items = [], page = 1, pageSize = 20) {
     items: items.slice(start, start + pageSize),
     page: safePage,
     pageCount,
-    total
+    total,
   };
 }

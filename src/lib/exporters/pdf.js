@@ -33,7 +33,7 @@ export async function captureReportElement(element, options = {}) {
     backgroundColor: '#ffffff',
     useCORS: true,
     logging: false,
-    ...options
+    ...options,
   });
 }
 
@@ -71,7 +71,7 @@ export function buildPdfDocument(canvas, { marginMm = 10 } = {}) {
       marginMm,
       marginMm,
       contentWidthMm,
-      getSliceHeightMm(slice.height, canvas.width, contentWidthMm)
+      getSliceHeightMm(slice.height, canvas.width, contentWidthMm),
     );
   });
 

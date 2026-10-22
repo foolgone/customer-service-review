@@ -11,30 +11,27 @@
     color-scheme: dark;
   }
 
-  /* 性能优化：启用硬件加速 */
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
-    background-image: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.92));
-    /* 性能优化：使用 GPU 加速滚动 */
-    -webkit-overflow-scrolling: touch;
-    will-change: scroll-position;
-  }
-
-  html.dark body {
-    background-image: linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(15, 23, 42, 0.96));
+    @apply min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
   }
 
   #root {
     min-height: 100vh;
   }
 
+  /* 统一焦点环：键盘可达性（企业级必做项） */
+  *:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
   ::selection {
-    @apply bg-cyan-500/20 text-cyan-950 dark:text-cyan-100;
+    @apply bg-blue-500/15;
   }
 
   ::-webkit-scrollbar {
@@ -54,66 +51,63 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(59, 130, 246, 0.5);
+    background: rgba(100, 116, 139, 0.6);
     background-clip: content-box;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply border border-white/60 bg-white/75 shadow-glow backdrop-blur-xl transition duration-300 hover:shadow-[0_24px_80px_-34px_rgba(15,23,42,0.42)] dark:border-slate-800/70 dark:bg-slate-900/75;
+  /* 卡片：平面 + 1px 边框 + 极轻阴影（替代玻璃拟态） */
+  .glass-card,
+  .panel {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold text-slate-900 dark:text-slate-100;
+  }
+
+  .muted {
+    @apply text-xs text-slate-500 dark:text-slate-400;
   }
 
   .soft-input {
-    @apply w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100;
+    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
-  .animate-rise {
-    animation: rise-up 0.45s ease-out both;
+  .secondary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800;
   }
 
-  .animate-soft-float {
-    animation: soft-float 8s ease-in-out infinite;
+  .ghost-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800;
   }
 
-  /* 性能优化：为经常动画的元素启用 GPU 加速 */
-  .shadow-glow,
-  .primary-button,
-  .soft-input {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
+  .danger-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-rose-200 bg-white px-3.5 py-2 text-sm font-medium text-rose-700 transition-colors duration-150 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40;
   }
 
-  /* 优化：减少重绘 */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-}
-
-@keyframes rise-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
+  .kbd {
+    @apply inline-flex min-w-[1.5rem] items-center justify-center rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300;
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes soft-float {
-  0%,
-  100% {
-    transform: translateY(0px);
+  .data-table {
+    @apply w-full border-collapse text-left text-sm;
   }
 
-  50% {
-    transform: translateY(-4px);
+  .data-table th {
+    @apply whitespace-nowrap border-b border-slate-200 px-3 py-2 text-xs font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400;
+  }
+
+  .data-table td {
+    @apply border-b border-slate-100 px-3 py-2 align-top text-slate-700 dark:border-slate-800/70 dark:text-slate-200;
   }
 }

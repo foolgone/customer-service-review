@@ -130,7 +130,8 @@ export function setupApp(fetchOptions = {}, userOptions = {}) {
 
 /** 等待主工作台渲染完成（数据加载成功信号） */
 export async function waitForWorkbench() {
-  await screen.findByRole('heading', { name: 'AI 质检分析平台' });
+  // 新版应用外壳把产品名移入侧边栏，这里等「工作台工具栏」渲染完成作为就绪信号
+  await screen.findByRole('button', { name: '导出报告' });
 }
 
 // -------------------- 常用元素定位 --------------------
@@ -149,7 +150,7 @@ export function scoreButton(label) {
 
 /** 「当前标签」卡片容器 */
 export function currentLabelBox() {
-  return screen.getByText('当前标签').parentElement;
+  return screen.getByText('当前标签').closest('section');
 }
 
 /** 顶部「已标注 N / M」卡片 */

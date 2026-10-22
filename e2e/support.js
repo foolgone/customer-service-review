@@ -49,6 +49,5 @@ export function mockDeepSeek(page, body = { labels: ['accurate'], reason: '回�
 /** 等待主工作台渲染完成（示例数据加载成功） */
 export async function waitForWorkbench(page) {
   await page.goto('/');
-  await page.getByRole('heading', { name: 'AI 质检分析平台' }).waitFor();
   await page.getByRole('button', { name: '导出报告' }).waitFor();
 }
