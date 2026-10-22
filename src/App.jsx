@@ -41,7 +41,8 @@ function getProgressLabel(currentIndex, total) {
 // 兼容子路径部署（如 GitHub Pages 的 /customer-service-review/）；本地与根路径部署时仍为 /data/...
 const CONVERSATIONS_URL = `${import.meta.env.BASE_URL}data/conversations.json`;
 
-// Dashboard 懒加载占位：尺寸贴近真实卡片，避免 chunk 加载期间布局跳动；
+// Dashboard 懒加载占位：高度对齐 Dashboard.jsx 的真实卡片（2026-10-22 在 1468×936 视口实测：
+// 区块 80 / 指标行 117 / 主区左列 361+317+301、右列 375+407+199），让 chunk 加载前后的布局位移接近 0。
 // aria-hidden 保证骨架不会被测试或读屏当作真实内容。
 function DashboardSkeleton() {
   return (
@@ -49,16 +50,26 @@ function DashboardSkeleton() {
       aria-hidden="true"
       className="rounded-[32px] border border-white/60 bg-white/70 p-5 shadow-glow backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/75 md:p-6"
     >
-      <div className="h-5 w-32 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-      <div className="mt-3 h-8 w-64 max-w-full animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+      <div className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="h-24 animate-pulse rounded-[24px] bg-slate-100 dark:bg-slate-800" />
+          <div key={index} className="h-[117px] animate-pulse rounded-[24px] bg-slate-100 dark:bg-slate-800" />
         ))}
       </div>
       <div className="mt-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="h-64 animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
-        <div className="h-64 animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+        <div className="grid gap-4">
+          <div className="h-[361px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="h-[317px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+            <div className="h-[317px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+          </div>
+          <div className="h-[301px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+        </div>
+        <div className="grid gap-4">
+          <div className="h-[375px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+          <div className="h-[407px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+          <div className="h-[199px] animate-pulse rounded-[28px] bg-slate-100 dark:bg-slate-800" />
+        </div>
       </div>
     </section>
   );
