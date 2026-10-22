@@ -22,7 +22,10 @@ test.describe('AI 辅助分析', () => {
     await expect(page.getByText('已自动保存')).toBeVisible();
 
     await page.getByRole('button', { name: 'AI 分析' }).click();
-    await expect(page.getByText(/已生成 1 个建议标签/)).toBeVisible({ timeout: 20_000 });
+    // 分析成功后面板会自动展开（AnalysisPanel 的 effect），折叠态摘要只是瞬时状态，
+    // 因此断言稳定信号：标题变为「已得到 AI 建议」+ 建议标签区出现
+    await expect(page.getByRole('heading', { name: '已得到 AI 建议' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('建议标签')).toBeVisible();
 
     const annotations = await readStore(page, ANNOTATIONS_KEY);
     expect(annotations['001'].labels).toEqual(['risky']); // 人工结论保留
