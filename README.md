@@ -48,7 +48,7 @@ npm run test:coverage    # 全量测试 + 覆盖率报告（coverage/index.html�
 
 测试文件的组织方式：
 
-> 当前状态：**62 个测试文件 / 895 条用例全部通过**，行覆盖率 **99.11%**、分支覆盖率 **96.89%**、函数覆盖 **99.63%**（2026-10-22，含前端性能优化与可访问性修复回归）。
+> 当前状态：**62 个测试文件 / 896 条用例全部通过**，行覆盖率 **99.11%**、分支覆盖率 **96.89%**、函数覆盖 **99.63%**（2026-10-22，含前端性能优化、可访问性修复与主题持久化回归）。
 > 详细用例清单见 `docx/测试用例文档.md`，执行结果见 `docx/测试报告.md`。
 
 ```
@@ -61,6 +61,20 @@ tests/
 │   └── components/             # UI 组件测试
 └── integration/                # App 端到端用户流程测试
 ```
+
+### 运行 E2E（真实浏览器）
+
+Playwright 驱动的真实浏览器测试，覆盖 jsdom 覆盖不到的部分：真实下载、文件选择、`localStorage` 跨刷新持久化、真实布局与图表渲染。
+
+```bash
+npm run test:e2e          # 全量 E2E（15 个用例）
+npm run test:e2e:headed   # 有头模式，方便观察
+npm run test:e2e:report   # 查看最近一次 HTML 报告
+```
+
+- 本地默认使用系统安装的 **Edge**（`channel: 'msedge'`），无需 `playwright install` 下载浏览器；CI（Ubuntu）自动切换到 Playwright 自带 Chromium；
+- 测试会自动拉起 Vite dev server（端口 5178），结束后关闭；
+- 用例组织：`e2e/` 下按功能拆分 —— `smoke`（加载/主题）、`annotation`（标注/持久化）、`import`（三步向导）、`export`（CSV/Excel/PDF 真实下载）、`ai-batch`（AI 单条/批量，mock DeepSeek，不产生真实调用）。
 
 ## ⚙️ 配置
 
@@ -163,7 +177,11 @@ customer-service-review/
 │   ├── 前端优化方案.md                 # 性能/可访问性优化与实测记录
 │   ├── 项目开发进度追踪.md
 │   └── 开发启动计划.md
-├── tests/                              # 自动化测试
+├── e2e/                               # Playwright 真实浏览器测试
+│   ├── fixtures/                       # 上传用样例数据
+│   ├── smoke.spec.js / annotation.spec.js / import.spec.js / export.spec.js / ai-batch.spec.js
+│   └── support.js                      # 共享工具（localStorage 预置 / DeepSeek mock）
+├── tests/                              # 自动化测试（Vitest + jsdom）
 │   ├── setup.js                        # Vitest 全局初始化与 jsdom polyfill
 │   ├── helpers/file.js                 # 测试数据工厂
 │   ├── unit/                           # 单元测试（lib / hooks / components）
@@ -207,13 +225,13 @@ customer-service-review/
 - [x] 全局错误边界（chunk 加载失败可恢复，不再整页白屏）
 - [x] 前端性能优化（Dashboard 懒加载、图表动画关闭，主包 596 KB → 190 KB / gzip 179 → 60 KB，CLS 0）
 - [x] 可访问性达标（Lighthouse Accessibility 100 / Best Practices 100）
-- [x] 测试工程（Vitest + React Testing Library：895 条用例，行覆盖 99.11%）
-- [x] CI 门禁（GitHub Actions：push/PR 自动跑测试 + 覆盖率阈值）
+- [x] 测试工程（Vitest + React Testing Library：896 条用例，行覆盖 99.11%）
+- [x] E2E 测试（Playwright：15 个用例，覆盖导入/标注/导出/AI/主题持久化真实浏览器流程）
+- [x] CI 门禁（GitHub Actions：push/PR 自动跑单测 + 覆盖率阈值 + Playwright E2E）
 - [x] 部署上线（GitHub Pages 自动部署：https://foolgone.github.io/customer-service-review/ ）
 - [x] 用户手册（面向质检员的操作说明：`docx/用户手册.md`）
 
 ### 📅 计划中
-- [ ] 真实浏览器 E2E（Playwright：导入 → 标注 → 导出 → 批量分析）
 - [ ] 技术债收口（单条 AI 分析统一到 Provider 抽象、CSV 导出并入 `lib/exporters`）
 - [ ] 部署平台迁移（Vercel / Netlify：immutable 长缓存 + PR 预览环境）
 - [ ] 其他服务商 AI Provider 接入（OpenAI / Claude）

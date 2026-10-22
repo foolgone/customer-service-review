@@ -8,3 +8,6 @@ coverage
 docx/
 .preview/
 .idea/
+test-results/
+playwright-report/
+blob-report/

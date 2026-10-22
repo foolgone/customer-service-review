@@ -1,0 +1,16 @@
+[
+  {
+    "id": "e2e-001",
+    "turns": [
+      { "role": "user", "content": "我买的耳机左耳没声音，能退吗？" },
+      { "role": "assistant", "content": "签收后 7 天内出现质量问题可以申请退款，我现在帮您发起。" }
+    ]
+  },
+  {
+    "id": "e2e-002",
+    "turns": [
+      { "role": "user", "content": "包裹显示签收但我没收到" },
+      { "role": "assistant", "content": "建议先查看门卫处、快递柜或邻居是否代收。" }
+    ]
+  }
+]
