@@ -36,6 +36,9 @@ function getProgressLabel(currentIndex, total) {
   return `${currentIndex + 1} / ${total}`;
 }
 
+// 兼容子路径部署（如 GitHub Pages 的 /customer-service-review/）；本地与根路径部署时仍为 /data/...
+const CONVERSATIONS_URL = `${import.meta.env.BASE_URL}data/conversations.json`;
+
 const LABEL_DISPLAY_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
 const LABEL_SHORTCUT_MAP = new Map(LABELS.map((item) => [item.shortcut, item.value]));
 
@@ -98,7 +101,7 @@ export default function App() {
 
     async function loadConversations() {
       try {
-        const response = await fetch('/data/conversations.json');
+        const response = await fetch(CONVERSATIONS_URL);
         if (!response.ok) {
           throw new Error(`读取对话数据失败：${response.status}`);
         }
@@ -473,7 +476,7 @@ export default function App() {
 
   const handleRestoreSample = async () => {
     try {
-      const response = await fetch('/data/conversations.json');
+      const response = await fetch(CONVERSATIONS_URL);
       if (!response.ok) {
         throw new Error(`读取示例数据失败：${response.status}`);
       }
