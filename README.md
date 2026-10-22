@@ -159,6 +159,9 @@ customer-service-review/
 │   ├── 测试计划.md
 │   ├── 测试用例文档.md
 │   ├── 测试报告.md
+│   ├── 用户手册.md                     # 面向质检员的操作说明
+│   ├── 前端优化方案.md                 # 性能/可访问性优化与实测记录
+│   ├── 项目开发进度追踪.md
 │   └── 开发启动计划.md
 ├── tests/                              # 自动化测试
 │   ├── setup.js                        # Vitest 全局初始化与 jsdom polyfill
@@ -207,10 +210,10 @@ customer-service-review/
 - [x] 测试工程（Vitest + React Testing Library：895 条用例，行覆盖 99.11%）
 - [x] CI 门禁（GitHub Actions：push/PR 自动跑测试 + 覆盖率阈值）
 - [x] 部署上线（GitHub Pages 自动部署：https://foolgone.github.io/customer-service-review/ ）
+- [x] 用户手册（面向质检员的操作说明：`docx/用户手册.md`）
 
 ### 📅 计划中
 - [ ] 真实浏览器 E2E（Playwright：导入 → 标注 → 导出 → 批量分析）
-- [ ] 用户手册（面向质检员的操作说明）
 - [ ] 技术债收口（单条 AI 分析统一到 Provider 抽象、CSV 导出并入 `lib/exporters`）
 - [ ] 部署平台迁移（Vercel / Netlify：immutable 长缓存 + PR 预览环境）
 - [ ] 其他服务商 AI Provider 接入（OpenAI / Claude）
