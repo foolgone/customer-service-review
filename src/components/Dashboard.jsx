@@ -16,6 +16,9 @@ import {
 } from 'recharts';
 import { LABELS } from '../lib/constants';
 import { formatDurationLabel } from '../lib/analytics';
+// 图表动画统一关闭：recharts 的 isAnimationActive 只作用于系列组件（Line/Bar/Pie），
+// 加在 LineChart/BarChart 容器上无效；这里复用 lib/performance.js 里早已定义但此前未被引用的配置。
+import { CHART_ANIMATION_CONFIG } from '../lib/performance';
 
 const PIE_COLORS = ['#06b6d4', '#0f172a', '#3b82f6', '#94a3b8', '#22c55e', '#f59e0b'];
 const LABEL_MAP = new Map(LABELS.map((item) => [item.value, item.label]));
@@ -62,7 +65,14 @@ const TrendChart = memo(function TrendChart({ data, isDark, todayReviewCount }) 
                 borderRadius: '16px'
               }}
             />
-            <Line type="monotone" dataKey="count" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#06b6d4"
+              strokeWidth={3}
+              dot={{ r: 4 }}
+              {...CHART_ANIMATION_CONFIG}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -87,7 +97,7 @@ const LabelChart = memo(function LabelChart({ data, isDark }) {
                 borderRadius: '16px'
               }}
             />
-            <Bar dataKey="value" radius={[0, 16, 16, 0]} fill="#06b6d4" />
+            <Bar dataKey="value" radius={[0, 16, 16, 0]} fill="#06b6d4" {...CHART_ANIMATION_CONFIG} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -112,7 +122,7 @@ const ScoreChart = memo(function ScoreChart({ data, isDark }) {
                 borderRadius: '16px'
               }}
             />
-            <Bar dataKey="value" radius={[16, 16, 0, 0]} fill="#0f172a" />
+            <Bar dataKey="value" radius={[16, 16, 0, 0]} fill="#0f172a" {...CHART_ANIMATION_CONFIG} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -132,7 +142,15 @@ const ProgressPieChart = memo(function ProgressPieChart({ reviewedCount, pending
       <div className="mt-3 h-56">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={82} paddingAngle={4}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={55}
+              outerRadius={82}
+              paddingAngle={4}
+              {...CHART_ANIMATION_CONFIG}
+            >
               {pieData.map((entry, index) => (
                 <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
               ))}
