@@ -380,7 +380,7 @@ export default function DataManagerPanel({ open, conversations = [], annotations
             <button
               type="button"
               onClick={onClose}
-              className="primary-button bg-cyan-500 text-white hover:bg-cyan-600"
+              className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
             >
               关闭
             </button>

@@ -260,7 +260,7 @@ export default function ExportReportPanel({ open, conversations = [], annotation
               type="button"
               onClick={handleExportPdf}
               disabled={Boolean(busy)}
-              className="primary-button bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-50"
+              className="primary-button bg-cyan-700 text-white hover:bg-cyan-800 disabled:opacity-50"
             >
               {busy === 'pdf' ? '生成中...' : '导出 PDF'}
             </button>

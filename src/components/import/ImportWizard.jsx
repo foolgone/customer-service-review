@@ -198,7 +198,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${
                     index <= stepIndex
-                      ? 'bg-cyan-500 text-white'
+                      ? 'bg-cyan-700 text-white'
                       : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                   }`}
                 >
@@ -302,7 +302,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
                 type="button"
                 onClick={() => setStep('confirm')}
                 disabled={!stats.valid}
-                className="primary-button bg-cyan-500 text-white hover:bg-cyan-600"
+                className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
               >
                 下一步
               </button>
@@ -313,7 +313,7 @@ export default function ImportWizard({ open, onClose, onImport }) {
                 type="button"
                 onClick={handleConfirmImport}
                 disabled={importing || !stats.valid}
-                className="primary-button bg-cyan-500 text-white hover:bg-cyan-600"
+                className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
               >
                 {importing ? '导入中...' : `确认导入 ${stats.valid} 条`}
               </button>

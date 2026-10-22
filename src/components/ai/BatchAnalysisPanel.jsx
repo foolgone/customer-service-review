@@ -311,7 +311,7 @@ export default function BatchAnalysisPanel({
                 type="button"
                 onClick={handleStart}
                 disabled={!candidates.length || !apiKey}
-                className="primary-button bg-cyan-500 text-white hover:bg-cyan-600"
+                className="primary-button bg-cyan-700 text-white hover:bg-cyan-800"
               >
                 {`开始分析 ${candidates.length} 条`}
               </button>

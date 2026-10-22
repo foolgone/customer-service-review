@@ -214,7 +214,7 @@ export default function SettingsPanel({ open, settings = DEFAULT_SETTINGS, onClo
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={handleSave} className="primary-button bg-cyan-500 text-white hover:bg-cyan-600">
+                <button type="button" onClick={handleSave} className="primary-button bg-cyan-700 text-white hover:bg-cyan-800">
                   保存设置
                 </button>
                 <button
